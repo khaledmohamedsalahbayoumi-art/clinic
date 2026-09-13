@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { api } from '../services/api';
 
 export default function LoginView({ onLoginSuccess, onSwitchToClient }) {
   const [username, setUsername] = useState('');
@@ -17,14 +18,9 @@ export default function LoginView({ onLoginSuccess, onSwitchToClient }) {
     setErrorMsg('');
     setIsLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username.trim(), password })
-      });
-      const data = await res.json();
+      const data = await api.login(username.trim(), password);
 
-      if (!res.ok) {
+      if (data.error) {
         setErrorMsg(data.error || 'فشل تسجيل الدخول، تأكد من صحة البيانات');
         setIsLoading(false);
         return;
@@ -35,6 +31,7 @@ export default function LoginView({ onLoginSuccess, onSwitchToClient }) {
       localStorage.setItem('clinic_token', data.token);
       onLoginSuccess(data.user);
     } catch (err) {
+      console.error('Login error:', err);
       setErrorMsg('تعذر الاتصال بالخادم، يرجى المحاولة مرة أخرى');
       setIsLoading(false);
     }
