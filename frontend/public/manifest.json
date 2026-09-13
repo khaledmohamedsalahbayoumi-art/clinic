@@ -1,0 +1,44 @@
+{
+  "name": "ميديكال هاب | نظام العيادات والمراكز الطبية",
+  "short_name": "ميديكال هاب",
+  "description": "المنظومة السحابية المتكاملة لإدارة المراكز الطبية والعيادات التخصصية وحجوزات المرضى",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0284c7",
+  "orientation": "any",
+  "dir": "rtl",
+  "lang": "ar",
+  "categories": ["medical", "health", "productivity", "business"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512 any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "📋 طابور الانتظار",
+      "short_name": "الطابور",
+      "description": "متابعة كشوفات وطابور انتظار اليوم",
+      "url": "/?tab=queue",
+      "icons": [{ "src": "/icon.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "📂 ملفات المرضى EMR",
+      "short_name": "المرضى",
+      "description": "استعراض ملفات وسجلات المرضى",
+      "url": "/?tab=patients",
+      "icons": [{ "src": "/icon.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "🩺 بوابة الحجز للكلينت",
+      "short_name": "حجز موعد",
+      "description": "حجز موعد كشف جديد للمريض",
+      "url": "/?portal=client",
+      "icons": [{ "src": "/icon.svg", "sizes": "96x96" }]
+    }
+  ]
+}

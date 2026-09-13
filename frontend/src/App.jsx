@@ -10,6 +10,8 @@ import ClientPortalView from './components/ClientPortalView';
 import WaitingRoomScreen from './components/WaitingRoomScreen';
 import VitalsModal from './components/VitalsModal';
 import LoginView from './components/LoginView';
+import BottomNav from './components/BottomNav';
+import PwaInstallPrompt from './components/PwaInstallPrompt';
 import { api } from './services/api';
 
 export default function App() {
@@ -236,6 +238,8 @@ export default function App() {
 
       {/* Main Container */}
       <main style={{ flex: 1, maxWidth: '1440px', width: '100%', margin: '0 auto', padding: '24px 20px' }}>
+        {/* PWA Install Banner */}
+        <PwaInstallPrompt />
         {activePortal === 'admin' ? (
           /* Check if user is logged in */
           !currentUser ? (
@@ -576,6 +580,17 @@ export default function App() {
           ميديكال هاب © {new Date().getFullYear()} - نظام إدارة المراكز الطبية والعيادات المتعددة الفروع
         </div>
       </footer>
+
+      {/* Mobile Native App Bottom Navigation Bar */}
+      <BottomNav
+        activePortal={activePortal}
+        setActivePortal={setActivePortal}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        allowedTabs={allowedTabs}
+        waitingCount={dashboardStats?.waitingCount || 0}
+        currentUser={currentUser}
+      />
     </div>
   );
 }
