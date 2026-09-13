@@ -1,4 +1,10 @@
-const API_BASE = 'http://localhost:5000/api';
+// Dynamically detect API base URL (works seamlessly in local dev, on same Wi-Fi, and online on Render/Vercel/Cloud)
+const API_BASE = import.meta.env.VITE_API_URL || (
+  typeof window !== 'undefined' && window.location.port === '3000'
+    ? `http://${window.location.hostname}:5000/api`
+    : '/api'
+);
+
 
 export const api = {
   // Authentication

@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
 const { getStore, saveData } = require('./data/store');
 
 const app = express();
@@ -732,8 +734,20 @@ app.post('/api/doctors', (req, res) => {
   res.status(201).json(newDoc);
 });
 
+// ------------------- PRODUCTION STATIC ASSETS & SPA ROUTING -------------------
+const frontendDist = path.join(__dirname, '../frontend/dist');
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+  app.get('*', (req, res, next) => {
+    if (req.url.startsWith('/api')) {
+      return next();
+    }
+    res.sendFile(path.join(frontendDist, 'index.html'));
+  });
+}
+
 // Start server
 app.listen(PORT, () => {
-  console.log(`Clinic Management Backend running on http://localhost:${PORT}`);
+  console.log(`Clinic Management Backend running on port ${PORT}`);
 });
 
