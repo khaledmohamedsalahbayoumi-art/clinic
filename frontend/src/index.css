@@ -292,6 +292,83 @@ select.form-control {
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* ==========================================================================
+   Responsive Design Breakpoints (تجاوب كامل مع الشاشات المختلفة والموبايل)
+   ========================================================================== */
+
+/* Tablets and Mobile (أجهزة التابلت والموبايل تحت 768px) */
+@media (max-width: 768px) {
+  body {
+    font-size: 0.95rem;
+  }
+
+  /* Adjust Modal for smaller screens */
+  .modal-overlay {
+    padding: 10px;
+    align-items: flex-end;
+  }
+
+  .modal-content {
+    max-width: 100%;
+    max-height: 92vh;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  }
+
+  .modal-header {
+    padding: 16px;
+  }
+
+  .modal-body {
+    padding: 16px;
+  }
+
+  .modal-footer {
+    padding: 14px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .modal-footer .btn {
+    flex: 1 1 auto;
+    min-height: 44px;
+  }
+
+  /* Form controls touch friendly */
+  .form-control {
+    font-size: 16px; /* Prevents auto-zoom on iOS Safari */
+    padding: 12px 14px;
+  }
+
+  .btn {
+    padding: 10px 16px;
+  }
+
+  .btn-lg {
+    padding: 12px 20px;
+    font-size: 0.98rem;
+  }
+}
+
+/* Small Mobile Screens (الهواتف الصغيرة تحت 480px) */
+@media (max-width: 480px) {
+  h1 { font-size: 1.35rem; }
+  h2 { font-size: 1.2rem; }
+  h3 { font-size: 1.1rem; }
+
+  .badge {
+    font-size: 0.75rem;
+    padding: 3px 8px;
+  }
+
+  /* Table horizontal scroll indicator */
+  div[style*="overflow-x: auto"],
+  div[style*="overflowX: auto"],
+  div[style*="overflowX: 'auto'"] {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+
 /* Print Styles (خصوصاً للروشتات) */
 @media print {
   body * {
