@@ -7,7 +7,9 @@ export default function Navbar({
   onLogout,
   selectedBranch,
   setSelectedBranch,
-  branches
+  branches,
+  onToggleSidebar,
+  onOpenMultiDevice
 }) {
   return (
     <header style={{
@@ -15,7 +17,7 @@ export default function Navbar({
       borderBottom: '1px solid var(--border-light)',
       position: 'sticky',
       top: 0,
-      zIndex: 100,
+      zIndex: 95,
       boxShadow: 'var(--shadow-sm)'
     }}>
       {/* Top Banner with Brand & Portal Switcher */}
@@ -31,32 +33,32 @@ export default function Navbar({
       }}>
         {/* Brand & Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{
-            width: '44px',
-            height: '44px',
-            borderRadius: '12px',
-            background: 'var(--primary-gradient)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#ffffff',
-            fontSize: '1.4rem',
-            boxShadow: '0 4px 10px rgba(2, 132, 199, 0.3)'
-          }}>
-            🏥
-          </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h1 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
-                ميديكال هاب
-              </h1>
-              <span className="badge badge-primary" style={{ fontSize: '0.75rem' }}>
-                نظام إدارة المراكز الطبية
-              </span>
-            </div>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              إدارة الفروع • العيادات التخصصية • رعاية المرضى
-            </p>
+          {activePortal === 'admin' && currentUser && (
+            <button
+              type="button"
+              id="btn-toggle-sidebar"
+              className="navbar-sidebar-toggle only-mobile"
+              onClick={onToggleSidebar}
+              title="فتح أو طي القائمة الجانبية"
+            >
+              ☰
+            </button>
+          )}
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <img
+              src="/logo.png"
+              alt="Clini-Tech كليني تك"
+              style={{
+                height: '44px',
+                maxWidth: '220px',
+                objectFit: 'contain',
+                display: 'block'
+              }}
+            />
+            <span className="badge badge-primary no-mobile" style={{ fontSize: '0.75rem', alignSelf: 'center' }}>
+              نظام إدارة المراكز الطبية
+            </span>
           </div>
         </div>
 
@@ -96,6 +98,29 @@ export default function Navbar({
             🩺 بوابة المراجعين والكلينت
           </button>
         </div>
+
+        {/* Multi-Device & PWA WebApp Button */}
+        <button
+          id="btn-multi-device"
+          type="button"
+          className="btn btn-sm btn-outline"
+          onClick={onOpenMultiDevice}
+          style={{
+            borderColor: 'var(--primary-300)',
+            backgroundColor: 'var(--primary-50)',
+            color: 'var(--primary-700)',
+            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            borderRadius: 'var(--radius-md)',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+          }}
+          title="فتح النظام على أجهزة متعددة (موبايل، تابلت، كمبيوتر) وتثبيت التطبيق"
+        >
+          <span style={{ fontSize: '1rem' }}>📲</span>
+          <span>ربط الأجهزة والتطبيق</span>
+        </button>
 
         {/* Admin User Info & Branch Selector */}
         {activePortal === 'admin' && currentUser && (

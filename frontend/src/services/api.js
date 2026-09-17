@@ -58,8 +58,44 @@ export const api = {
     });
     return res.json();
   },
+  updateBranch: async (id, data) => {
+    const res = await fetch(`${API_BASE}/branches/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return res.json();
+  },
+  deleteBranch: async (id) => {
+    const res = await fetch(`${API_BASE}/branches/${id}`, {
+      method: 'DELETE'
+    });
+    return res.json();
+  },
   getClinics: async () => {
     const res = await fetch(`${API_BASE}/clinics`);
+    return res.json();
+  },
+  createClinic: async (data) => {
+    const res = await fetch(`${API_BASE}/clinics`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return res.json();
+  },
+  updateClinic: async (id, data) => {
+    const res = await fetch(`${API_BASE}/clinics/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return res.json();
+  },
+  deleteClinic: async (id) => {
+    const res = await fetch(`${API_BASE}/clinics/${id}`, {
+      method: 'DELETE'
+    });
     return res.json();
   },
 
@@ -78,6 +114,20 @@ export const api = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
+    });
+    return res.json();
+  },
+  updateDoctor: async (id, data) => {
+    const res = await fetch(`${API_BASE}/doctors/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return res.json();
+  },
+  deleteDoctor: async (id) => {
+    const res = await fetch(`${API_BASE}/doctors/${id}`, {
+      method: 'DELETE'
     });
     return res.json();
   },
@@ -188,6 +238,12 @@ export const api = {
   // Dashboard Stats
   getDashboardStats: async (branchId = 'all') => {
     const res = await fetch(`${API_BASE}/dashboard/stats?branchId=${branchId}`);
+    return res.json();
+  },
+
+  // Multi-Device & Network Connectivity Info
+  getNetworkInfo: async () => {
+    const res = await fetch(`${API_BASE}/network-info`);
     return res.json();
   }
 };

@@ -24,13 +24,24 @@ export default function SettingsView({
   onSaveUser,
   onDeleteUser,
   onAddBranch,
-  onAddDoctor
+  onUpdateBranch,
+  onDeleteBranch,
+  onAddClinic,
+  onUpdateClinic,
+  onDeleteClinic,
+  onAddDoctor,
+  onUpdateDoctor,
+  onDeleteDoctor
 }) {
-  const [activeSubTab, setActiveSubTab] = useState('users'); // 'users', 'branches', 'doctors'
+  const [activeSubTab, setActiveSubTab] = useState('users'); // 'users', 'branches', 'clinics', 'doctors'
   const [editingUser, setEditingUser] = useState(null);
+  const [editingBranch, setEditingBranch] = useState(null);
+  const [editingClinic, setEditingClinic] = useState(null);
+  const [editingDoctor, setEditingDoctor] = useState(null);
   const [showUserPassword, setShowUserPassword] = useState(false);
   const [isNewUserModalOpen, setIsNewUserModalOpen] = useState(false);
   const [isNewBranchModalOpen, setIsNewBranchModalOpen] = useState(false);
+  const [isNewClinicModalOpen, setIsNewClinicModalOpen] = useState(false);
   const [isNewDoctorModalOpen, setIsNewDoctorModalOpen] = useState(false);
 
   // Form states
@@ -49,7 +60,15 @@ export default function SettingsView({
   const [branchForm, setBranchForm] = useState({
     name: '',
     address: '',
-    phone: ''
+    phone: '',
+    isMain: false
+  });
+
+  const [clinicForm, setClinicForm] = useState({
+    name: '',
+    icon: '🩺',
+    workingHours: 'يومياً من 09:00 ص إلى 10:00 م',
+    description: ''
   });
 
   const [doctorForm, setDoctorForm] = useState({
@@ -58,7 +77,12 @@ export default function SettingsView({
     clinicId: clinics[0]?.id || 'cl_internal',
     branchIds: ['br_maadi'],
     consultationFee: 400,
-    phone: ''
+    followUpFee: 150,
+    phone: '',
+    avatar: '👨‍⚕️',
+    schedule: [
+      { day: 'السبت', time: '10:00 ص - 02:00 م', branchId: branches[0]?.id || 'br_maadi' }
+    ]
   });
 
   // Handle opening user for edit
@@ -113,22 +137,138 @@ export default function SettingsView({
     setIsNewUserModalOpen(false);
   };
 
+  // Edit Branch Handler
+  const handleEditBranchClick = (b) => {
+    setEditingBranch(b);
+    setBranchForm({
+      name: b.name,
+      address: b.address || '',
+      phone: b.phone || '',
+      isMain: Boolean(b.isMain)
+    });
+    setIsNewBranchModalOpen(true);
+  };
+
   // Submit Branch
-  const handleBranchSubmit = (e) => {
+  const handleBranchSubmit = async (e) => {
     e.preventDefault();
     if (!branchForm.name.trim()) return;
-    onAddBranch(branchForm);
+    if (editingBranch && onUpdateBranch) {
+      await onUpdateBranch(editingBranch.id, branchForm);
+    } else {
+      await onAddBranch(branchForm);
+    }
     setIsNewBranchModalOpen(false);
-    setBranchForm({ name: '', address: '', phone: '' });
+    setEditingBranch(null);
+    setBranchForm({ name: '', address: '', phone: '', isMain: false });
+  };
+
+  // Edit Clinic Handler
+  const handleEditClinicClick = (c) => {
+    setEditingClinic(c);
+    setClinicForm({
+      name: c.name || '',
+      icon: c.icon || '🩺',
+      workingHours: c.workingHours || 'يومياً من 09:00 ص إلى 10:00 م',
+      description: c.description || ''
+    });
+    setIsNewClinicModalOpen(true);
+  };
+
+  // Submit Clinic
+  const handleClinicSubmit = async (e) => {
+    e.preventDefault();
+    if (!clinicForm.name.trim()) return;
+    if (editingClinic && onUpdateClinic) {
+      await onUpdateClinic(editingClinic.id, clinicForm);
+    } else if (onAddClinic) {
+      await onAddClinic(clinicForm);
+    }
+    setIsNewClinicModalOpen(false);
+    setEditingClinic(null);
+    setClinicForm({ name: '', icon: '🩺', workingHours: 'يومياً من 09:00 ص إلى 10:00 م', description: '' });
+  };
+
+  // Edit Doctor Handler
+  const handleEditDoctorClick = (doc) => {
+    setEditingDoctor(doc);
+    setDoctorForm({
+      name: doc.name || '',
+      title: doc.title || '',
+      clinicId: doc.clinicId || (clinics[0]?.id || 'cl_internal'),
+      branchIds: Array.isArray(doc.branchIds) && doc.branchIds.length > 0 ? doc.branchIds : [branches[0]?.id || 'br_maadi'],
+      consultationFee: doc.consultationFee !== undefined ? doc.consultationFee : 400,
+      followUpFee: doc.followUpFee !== undefined ? doc.followUpFee : 150,
+      phone: doc.phone || '',
+      avatar: doc.avatar || '👨‍⚕️',
+      schedule: Array.isArray(doc.schedule) && doc.schedule.length > 0
+        ? doc.schedule.map(s => ({ ...s }))
+        : [{ day: 'السبت', time: '10:00 ص - 02:00 م', branchId: branches[0]?.id || 'br_maadi' }]
+    });
+    setIsNewDoctorModalOpen(true);
+  };
+
+  // Schedule slot helpers
+  const handleAddScheduleSlot = () => {
+    setDoctorForm(prev => ({
+      ...prev,
+      schedule: [
+        ...(prev.schedule || []),
+        { day: 'السبت', time: '10:00 ص - 02:00 م', branchId: branches[0]?.id || 'br_maadi' }
+      ]
+    }));
+  };
+
+  const handleRemoveScheduleSlot = (index) => {
+    setDoctorForm(prev => ({
+      ...prev,
+      schedule: (prev.schedule || []).filter((_, idx) => idx !== index)
+    }));
+  };
+
+  const handleScheduleChange = (index, field, value) => {
+    setDoctorForm(prev => {
+      const updated = [...(prev.schedule || [])];
+      updated[index] = { ...updated[index], [field]: value };
+      return { ...prev, schedule: updated };
+    });
   };
 
   // Submit Doctor
-  const handleDoctorSubmit = (e) => {
+  const handleDoctorSubmit = async (e) => {
     e.preventDefault();
     if (!doctorForm.name.trim()) return;
-    onAddDoctor(doctorForm);
+
+    // Gather branches from schedule as well
+    const scheduledBranchIds = (doctorForm.schedule || []).map(s => s.branchId).filter(Boolean);
+    const combinedBranches = Array.from(new Set([...(doctorForm.branchIds || []), ...scheduledBranchIds]));
+
+    const payload = {
+      ...doctorForm,
+      branchIds: combinedBranches.length > 0 ? combinedBranches : [branches[0]?.id || 'br_maadi']
+    };
+
+    if (editingDoctor && onUpdateDoctor) {
+      await onUpdateDoctor(editingDoctor.id, payload);
+    } else if (onAddDoctor) {
+      await onAddDoctor(payload);
+    }
+
     setIsNewDoctorModalOpen(false);
-    setDoctorForm({ name: '', title: 'استشاري', clinicId: clinics[0]?.id || 'cl_internal', branchIds: ['br_maadi'], consultationFee: 400, phone: '' });
+    setEditingDoctor(null);
+    setDoctorForm({
+      name: '',
+      title: 'استشاري',
+      clinicId: clinics[0]?.id || 'cl_internal',
+      branchIds: [branches[0]?.id || 'br_maadi'],
+      consultationFee: 400,
+      followUpFee: 150,
+      phone: '',
+      avatar: '👨‍⚕️',
+      schedule: [
+        { day: 'السبت', time: '10:00 ص - 02:00 م', branchId: branches[0]?.id || 'br_maadi' }
+      ]
+    });
   };
 
   return (
@@ -182,9 +322,27 @@ export default function SettingsView({
           <button
             id="btn-add-new-branch"
             className="btn btn-primary"
-            onClick={() => setIsNewBranchModalOpen(true)}
+            onClick={() => {
+              setEditingBranch(null);
+              setBranchForm({ name: '', address: '', phone: '', isMain: false });
+              setIsNewBranchModalOpen(true);
+            }}
           >
-            ➕ إضافة فرع جديد
+            ➕ إضافة فرع جديد للمركز
+          </button>
+        )}
+
+        {activeSubTab === 'clinics' && (
+          <button
+            id="btn-add-new-clinic"
+            className="btn btn-primary"
+            onClick={() => {
+              setEditingClinic(null);
+              setClinicForm({ name: '', icon: '🩺', workingHours: 'يومياً من 09:00 ص إلى 10:00 م', description: '' });
+              setIsNewClinicModalOpen(true);
+            }}
+          >
+            ➕ إضافة عيادة جديدة
           </button>
         )}
 
@@ -192,9 +350,25 @@ export default function SettingsView({
           <button
             id="btn-add-new-doctor"
             className="btn btn-primary"
-            onClick={() => setIsNewDoctorModalOpen(true)}
+            onClick={() => {
+              setEditingDoctor(null);
+              setDoctorForm({
+                name: '',
+                title: 'استشاري',
+                clinicId: clinics[0]?.id || 'cl_internal',
+                branchIds: [branches[0]?.id || 'br_maadi'],
+                consultationFee: 400,
+                followUpFee: 150,
+                phone: '',
+                avatar: '👨‍⚕️',
+                schedule: [
+                  { day: 'السبت', time: '10:00 ص - 02:00 م', branchId: branches[0]?.id || 'br_maadi' }
+                ]
+              });
+              setIsNewDoctorModalOpen(true);
+            }}
           >
-            ➕ إضافة طبيب جديد
+            ➕ إضافة طبيب ومواعيد العمل
           </button>
         )}
       </div>
@@ -206,7 +380,8 @@ export default function SettingsView({
         backgroundColor: '#ffffff',
         padding: '10px 16px',
         borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--border-light)'
+        border: '1px solid var(--border-light)',
+        flexWrap: 'wrap'
       }}>
         <button
           className={`btn btn-sm ${activeSubTab === 'users' ? 'btn-primary' : 'btn-outline'}`}
@@ -223,11 +398,18 @@ export default function SettingsView({
           📍 إدارة الفروع ({branches.length})
         </button>
         <button
+          className={`btn btn-sm ${activeSubTab === 'clinics' ? 'btn-primary' : 'btn-outline'}`}
+          style={{ borderRadius: 'var(--radius-full)' }}
+          onClick={() => setActiveSubTab('clinics')}
+        >
+          🏥 العيادات والتخصصات ({clinics.length})
+        </button>
+        <button
           className={`btn btn-sm ${activeSubTab === 'doctors' ? 'btn-primary' : 'btn-outline'}`}
           style={{ borderRadius: 'var(--radius-full)' }}
           onClick={() => setActiveSubTab('doctors')}
         >
-          🩺 الأطباء والعيادات ({doctors.length})
+          🩺 الأطباء ومواعيد العمل ({doctors.length})
         </button>
       </div>
 
@@ -372,21 +554,156 @@ export default function SettingsView({
                 {b.isMain && <span className="badge badge-primary">المقر الرئيسي</span>}
               </div>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '8px' }}>
-                العنوان: {b.address}
+                العنوان: {b.address || 'لم يحدد'}
               </p>
-              <div style={{ fontSize: '0.85rem', color: 'var(--primary-700)', fontWeight: 600 }}>
-                هاتف الفرع: {b.phone}
+              <div style={{ fontSize: '0.85rem', color: 'var(--primary-700)', fontWeight: 600, marginBottom: '14px' }}>
+                هاتف الفرع: {b.phone || 'غير مسجل'}
+              </div>
+
+              {/* Action Buttons for Branch */}
+              <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid var(--border-light)', paddingTop: '12px' }}>
+                <button
+                  type="button"
+                  className="btn btn-outline btn-sm"
+                  style={{ flex: 1, fontWeight: 700 }}
+                  onClick={() => handleEditBranchClick(b)}
+                >
+                  ✏️ تعديل الفرع
+                </button>
+                {onDeleteBranch && (
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    style={{
+                      flex: 1,
+                      color: 'var(--rose-600)',
+                      borderColor: 'rgba(244, 63, 94, 0.3)',
+                      fontWeight: 700
+                    }}
+                    onClick={() => {
+                      if (branches.length <= 1) {
+                        alert('لا يمكن حذف الفرع الوحيد، يجب الإبقاء على فرع واحد على الأقل');
+                        return;
+                      }
+                      if (window.confirm(`هل أنت متأكد من حذف فرع (${b.name}) نهائياً؟`)) {
+                        onDeleteBranch(b.id);
+                      }
+                    }}
+                  >
+                    🗑️ حذف
+                  </button>
+                )}
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* TAB 3: DOCTORS */}
+      {/* TAB 3: CLINICS */}
+      {activeSubTab === 'clinics' && (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: '18px'
+        }}>
+          {clinics.map(c => {
+            const clinicDocs = doctors.filter(d => d.clinicId === c.id);
+            return (
+              <div key={c.id} style={{
+                backgroundColor: '#ffffff',
+                borderRadius: 'var(--radius-xl)',
+                border: '1px solid var(--border-light)',
+                padding: '20px',
+                boxShadow: 'var(--shadow-sm)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                gap: '14px'
+              }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '2.2rem' }}>{c.icon || '🩺'}</span>
+                      <div>
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: 800 }}>{c.name}</h3>
+                        <span className="badge badge-primary" style={{ fontSize: '0.75rem', marginTop: '2px' }}>
+                          👨‍⚕️ {clinicDocs.length} أطباء متاحين
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{
+                    backgroundColor: 'var(--bg-main)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '10px 14px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px',
+                    marginBottom: '8px'
+                  }}>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--primary-700)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>🕒 مواعيد العمل:</span>
+                      <span>{c.workingHours || 'يومياً من 09:00 ص إلى 10:00 م'}</span>
+                    </div>
+                    {c.description && (
+                      <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
+                        {c.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid var(--border-light)', paddingTop: '12px' }}>
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    style={{ flex: 1, fontWeight: 700 }}
+                    onClick={() => handleEditClinicClick(c)}
+                  >
+                    ✏️ تعديل ومواعيد العيادة
+                  </button>
+                  {onDeleteClinic && (
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      style={{
+                        flex: 1,
+                        color: 'var(--rose-600)',
+                        borderColor: 'rgba(244, 63, 94, 0.3)',
+                        fontWeight: 700
+                      }}
+                      onClick={() => {
+                        if (clinics.length <= 1) {
+                          alert('لا يمكن حذف العيادة الوحيدة المتبقية في المنظومة');
+                          return;
+                        }
+                        if (clinicDocs.length > 0) {
+                          if (!window.confirm(`هذه العيادة مرتبط بها (${clinicDocs.length}) أطباء. هل أنت متأكد من حذفها؟`)) {
+                            return;
+                          }
+                        } else if (!window.confirm(`هل أنت متأكد من حذف عيادة (${c.name}) نهائياً؟`)) {
+                          return;
+                        }
+                        onDeleteClinic(c.id);
+                      }}
+                    >
+                      🗑️ حذف العيادة
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* TAB 4: DOCTORS */}
       {activeSubTab === 'doctors' && (
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
           gap: '18px'
         }}>
           {doctors.map(doc => (
@@ -399,19 +716,123 @@ export default function SettingsView({
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              gap: '12px'
+              gap: '14px'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '2rem' }}>{doc.avatar || '👨‍⚕️'}</span>
-                <div>
-                  <h3 style={{ fontSize: '1.05rem', fontWeight: 800 }}>{doc.name}</h3>
-                  <span className="badge badge-primary" style={{ fontSize: '0.75rem' }}>{doc.clinicName}</span>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '2.2rem' }}>{doc.avatar || '👨‍⚕️'}</span>
+                    <div>
+                      <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>{doc.name}</h3>
+                      <span className="badge badge-primary" style={{ fontSize: '0.75rem' }}>{doc.clinicName}</span>
+                    </div>
+                  </div>
+                  <span style={{ color: '#f59e0b', fontWeight: 800, fontSize: '0.9rem' }}>⭐ {doc.rating || 5.0}</span>
+                </div>
+
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '8px' }}>{doc.title}</p>
+
+                {/* Fees and Contact */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  backgroundColor: 'var(--bg-main)',
+                  padding: '8px 12px',
+                  borderRadius: 'var(--radius-md)',
+                  fontSize: '0.82rem',
+                  marginBottom: '10px'
+                }}>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)' }}>الكشف: </span>
+                    <strong style={{ color: 'var(--primary-700)' }}>{doc.consultationFee} ج.م</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)' }}>الإعادة: </span>
+                    <strong>{doc.followUpFee || 150} ج.م</strong>
+                  </div>
+                  {doc.phone && (
+                    <div>
+                      <span style={{ color: 'var(--text-muted)' }}>📞 </span>
+                      <strong>{doc.phone}</strong>
+                    </div>
+                  )}
+                </div>
+
+                {/* Schedule preview */}
+                <div style={{
+                  border: '1px dashed var(--border-light)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '10px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px'
+                }}>
+                  <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--text-muted)' }}>
+                    📅 مواعيد وجدول الكشف:
+                  </span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {Array.isArray(doc.schedule) && doc.schedule.length > 0 ? (
+                      doc.schedule.map((slot, sIdx) => {
+                        const br = branches.find(b => b.id === slot.branchId);
+                        return (
+                          <span
+                            key={sIdx}
+                            style={{
+                              fontSize: '0.75rem',
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                              backgroundColor: 'var(--bg-card-subtle)',
+                              border: '1px solid var(--border-light)',
+                              color: 'var(--text-main)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            <strong>{slot.day}:</strong> {slot.time} {br ? `(${br.name})` : ''}
+                          </span>
+                        );
+                      })
+                    ) : (
+                      <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                        لم يتم تسجيل جدول مواعيد بعد
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{doc.title}</p>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', borderTop: '1px solid var(--border-light)', paddingTop: '10px' }}>
-                <span>قيمة الكشف: <strong>{doc.consultationFee} ج.م</strong></span>
-                <span style={{ color: '#f59e0b', fontWeight: 700 }}>⭐ {doc.rating}</span>
+
+              {/* Doctor Actions */}
+              <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid var(--border-light)', paddingTop: '12px' }}>
+                <button
+                  type="button"
+                  className="btn btn-outline btn-sm"
+                  style={{ flex: 1, fontWeight: 700 }}
+                  onClick={() => handleEditDoctorClick(doc)}
+                >
+                  ✏️ تعديل الطبيب والمواعيد
+                </button>
+                {onDeleteDoctor && (
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    style={{
+                      color: 'var(--rose-600)',
+                      borderColor: 'rgba(244, 63, 94, 0.3)',
+                      fontSize: '0.78rem',
+                      padding: '4px 10px',
+                      fontWeight: 700
+                    }}
+                    onClick={() => {
+                      if (window.confirm(`هل أنت متأكد من حذف الطبيب (${doc.name}) وإزالته من العيادات والمركز نهائياً؟`)) {
+                        onDeleteDoctor(doc.id);
+                      }
+                    }}
+                    title="حذف الطبيب من المركز الطبي"
+                  >
+                    🗑️ حذف
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -471,29 +892,9 @@ export default function SettingsView({
                   </div>
 
                   <div className="form-group" style={{ margin: 0 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                      <label className="form-label" style={{ margin: 0 }}>
-                        {editingUser ? 'كلمة المرور الحالية أو الجديدة' : 'كلمة المرور *'}
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => setShowUserPassword(!showUserPassword)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          fontSize: '0.82rem',
-                          color: 'var(--primary-600)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          padding: 0,
-                          fontWeight: 600
-                        }}
-                      >
-                        {showUserPassword ? '🙈 إخفاء الباسورد' : '👁️ إظهار الباسورد'}
-                      </button>
-                    </div>
+                    <label className="form-label" style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>
+                      {editingUser ? 'كلمة المرور الحالية أو الجديدة' : 'كلمة المرور *'}
+                    </label>
                     <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                       <input
                         type={showUserPassword ? 'text' : 'password'}
@@ -683,13 +1084,15 @@ export default function SettingsView({
         </div>
       )}
 
-      {/* New Branch Modal */}
+      {/* Branch Modal (Create or Edit) */}
       {isNewBranchModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsNewBranchModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+        <div className="modal-overlay" onClick={() => { setIsNewBranchModalOpen(false); setEditingBranch(null); }}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px' }}>
             <div className="modal-header">
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>➕ إضافة فرع جديد للمركز الطبي</h3>
-              <button className="btn btn-outline btn-sm" onClick={() => setIsNewBranchModalOpen(false)}>✕</button>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>
+                {editingBranch ? `✏️ تعديل بيانات: ${editingBranch.name}` : '➕ إضافة فرع جديد للمركز الطبي'}
+              </h3>
+              <button className="btn btn-outline btn-sm" onClick={() => { setIsNewBranchModalOpen(false); setEditingBranch(null); }}>✕</button>
             </div>
 
             <form onSubmit={handleBranchSubmit}>
@@ -727,38 +1130,165 @@ export default function SettingsView({
                     onChange={(e) => setBranchForm({ ...branchForm, phone: e.target.value })}
                   />
                 </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '4px' }}>
+                  <input
+                    type="checkbox"
+                    id="checkbox-is-main"
+                    checked={Boolean(branchForm.isMain)}
+                    onChange={(e) => setBranchForm({ ...branchForm, isMain: e.target.checked })}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                  />
+                  <label htmlFor="checkbox-is-main" style={{ cursor: 'pointer', fontSize: '0.88rem', fontWeight: 700 }}>
+                    تعيين هذا الفرع كمقر رئيسي للمركز
+                  </label>
+                </div>
               </div>
 
               <div className="modal-footer">
-                <button type="submit" className="btn btn-primary">حفظ الفرع</button>
-                <button type="button" className="btn btn-outline" onClick={() => setIsNewBranchModalOpen(false)}>إلغاء</button>
+                <button type="submit" className="btn btn-primary">
+                  {editingBranch ? 'حفظ التعديلات' : 'حفظ الفرع الجديد'}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={() => { setIsNewBranchModalOpen(false); setEditingBranch(null); }}
+                >
+                  إلغاء
+                </button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* New Doctor Modal */}
-      {isNewDoctorModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsNewDoctorModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '550px' }}>
+      {/* Clinic Modal (Create or Edit) */}
+      {isNewClinicModalOpen && (
+        <div className="modal-overlay" onClick={() => { setIsNewClinicModalOpen(false); setEditingClinic(null); }}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '540px' }}>
             <div className="modal-header">
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>➕ إضافة طبيب وعيادة جديدة</h3>
-              <button className="btn btn-outline btn-sm" onClick={() => setIsNewDoctorModalOpen(false)}>✕</button>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>
+                {editingClinic ? `✏️ تعديل عيادة ومواعيد: ${editingClinic.name}` : '➕ إضافة عيادة وتخصص جديد'}
+              </h3>
+              <button className="btn btn-outline btn-sm" onClick={() => { setIsNewClinicModalOpen(false); setEditingClinic(null); }}>✕</button>
             </div>
 
-            <form onSubmit={handleDoctorSubmit}>
+            <form onSubmit={handleClinicSubmit}>
               <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">اسم الطبيب ثلاثي *</label>
+                  <label className="form-label">اسم العيادة والتخصص الطبي *</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="مثال: د. حسام عبد الغفار"
+                    placeholder="مثال: عيادة المخ والأعصاب والعمود الفقري"
                     required
-                    value={doctorForm.name}
-                    onChange={(e) => setDoctorForm({ ...doctorForm, name: e.target.value })}
+                    value={clinicForm.name}
+                    onChange={(e) => setClinicForm({ ...clinicForm, name: e.target.value })}
                   />
+                </div>
+
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">أيقونة العيادة</label>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={clinicForm.icon}
+                      onChange={(e) => setClinicForm({ ...clinicForm, icon: e.target.value })}
+                      style={{ width: '80px', textAlign: 'center', fontSize: '1.3rem' }}
+                    />
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      {['🩺', '🦴', '👶', '❤️', '✨', '🦷', '👁️', '🧠', '👂', '🔬'].map(emoji => (
+                        <button
+                          key={emoji}
+                          type="button"
+                          className="btn btn-outline btn-sm"
+                          style={{ padding: '4px 8px', fontSize: '1.1rem' }}
+                          onClick={() => setClinicForm({ ...clinicForm, icon: emoji })}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">مواعيد عمل العيادة العامة</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="مثال: يومياً من 09:00 ص إلى 10:00 م (ما عدا الجمعة)"
+                    value={clinicForm.workingHours}
+                    onChange={(e) => setClinicForm({ ...clinicForm, workingHours: e.target.value })}
+                  />
+                </div>
+
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">تفاصيل وخدمات العيادة</label>
+                  <textarea
+                    className="form-control"
+                    rows="3"
+                    placeholder="نبذة عن الفحوصات والخدمات المتاحة في هذه العيادة..."
+                    value={clinicForm.description}
+                    onChange={(e) => setClinicForm({ ...clinicForm, description: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button type="submit" className="btn btn-primary">
+                  {editingClinic ? 'حفظ تعديلات العيادة' : 'إنشاء العيادة'}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={() => { setIsNewClinicModalOpen(false); setEditingClinic(null); }}
+                >
+                  إلغاء
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Doctor Modal (Create or Edit with Interactive Schedule Manager) */}
+      {isNewDoctorModalOpen && (
+        <div className="modal-overlay" onClick={() => { setIsNewDoctorModalOpen(false); setEditingDoctor(null); }}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '680px' }}>
+            <div className="modal-header">
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>
+                {editingDoctor ? `✏️ تعديل بيانات ومواعيد: ${editingDoctor.name}` : '➕ إضافة طبيب جديد وجدول مواعيده'}
+              </h3>
+              <button className="btn btn-outline btn-sm" onClick={() => { setIsNewDoctorModalOpen(false); setEditingDoctor(null); }}>✕</button>
+            </div>
+
+            <form onSubmit={handleDoctorSubmit}>
+              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxHeight: '72vh', overflowY: 'auto' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label">اسم الطبيب ثلاثي *</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="مثال: د. حسام عبد الغفار"
+                      required
+                      value={doctorForm.name}
+                      onChange={(e) => setDoctorForm({ ...doctorForm, name: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label">الدرجة العلمية واللقب</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="استشاري أول جراحة ومناظير"
+                      value={doctorForm.title}
+                      onChange={(e) => setDoctorForm({ ...doctorForm, title: e.target.value })}
+                    />
+                  </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
@@ -776,7 +1306,20 @@ export default function SettingsView({
                   </div>
 
                   <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label">قيمة الكشف (جنيه)</label>
+                    <label className="form-label">رقم الهاتف للتواصل</label>
+                    <input
+                      type="tel"
+                      className="form-control"
+                      placeholder="01012345678"
+                      value={doctorForm.phone}
+                      onChange={(e) => setDoctorForm({ ...doctorForm, phone: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label">سعر الكشف (ج.م)</label>
                     <input
                       type="number"
                       className="form-control"
@@ -784,23 +1327,164 @@ export default function SettingsView({
                       onChange={(e) => setDoctorForm({ ...doctorForm, consultationFee: e.target.value })}
                     />
                   </div>
+
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label">سعر الاستشارة / الإعادة (ج.م)</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={doctorForm.followUpFee}
+                      onChange={(e) => setDoctorForm({ ...doctorForm, followUpFee: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label">الرمز التعبيري</label>
+                    <select
+                      className="form-control"
+                      value={doctorForm.avatar}
+                      onChange={(e) => setDoctorForm({ ...doctorForm, avatar: e.target.value })}
+                    >
+                      <option value="👨‍⚕️">👨‍⚕️ طبيب</option>
+                      <option value="👩‍⚕️">👩‍⚕️ طبيبة</option>
+                      <option value="🩺">🩺 سماعة</option>
+                      <option value="✨">✨ مميز</option>
+                    </select>
+                  </div>
                 </div>
 
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">الدرجة العلمية واللقب</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="استشاري أول جراحة ومناظير"
-                    value={doctorForm.title}
-                    onChange={(e) => setDoctorForm({ ...doctorForm, title: e.target.value })}
-                  />
+                {/* Interactive Doctor Schedule Manager */}
+                <div style={{
+                  border: '1px solid var(--border-light)',
+                  backgroundColor: 'var(--bg-main)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '14px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <h4 style={{ fontSize: '0.98rem', fontWeight: 800, color: 'var(--primary-700)', margin: 0 }}>
+                        🕒 جدول مواعيد الكشف والعيادات
+                      </h4>
+                      <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                        حدد الأيام ومواعيد الحضور والفرع لكل موعد للطبيب
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      onClick={handleAddScheduleSlot}
+                      style={{ fontSize: '0.8rem', fontWeight: 700 }}
+                    >
+                      ➕ إضافة موعد آخر
+                    </button>
+                  </div>
+
+                  {(!doctorForm.schedule || doctorForm.schedule.length === 0) ? (
+                    <div style={{
+                      textAlign: 'center',
+                      padding: '16px',
+                      backgroundColor: '#ffffff',
+                      borderRadius: 'var(--radius-md)',
+                      color: 'var(--text-muted)',
+                      fontSize: '0.85rem'
+                    }}>
+                      لا يوجد مواعيد محددة للطبيب حالياً. اضغط "إضافة موعد آخر" لإضافة أول موعد.
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {doctorForm.schedule.map((slot, index) => (
+                        <div
+                          key={index}
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: '130px 1fr 150px 36px',
+                            gap: '8px',
+                            alignItems: 'center',
+                            backgroundColor: '#ffffff',
+                            padding: '8px 10px',
+                            borderRadius: 'var(--radius-md)',
+                            border: '1px solid var(--border-light)'
+                          }}
+                        >
+                          {/* Day */}
+                          <select
+                            className="form-control"
+                            style={{ padding: '6px 8px', fontSize: '0.85rem' }}
+                            value={slot.day}
+                            onChange={(e) => handleScheduleChange(index, 'day', e.target.value)}
+                          >
+                            <option value="السبت">السبت</option>
+                            <option value="الأحد">الأحد</option>
+                            <option value="الإثنين">الإثنين</option>
+                            <option value="الثلاثاء">الثلاثاء</option>
+                            <option value="الأربعاء">الأربعاء</option>
+                            <option value="الخميس">الخميس</option>
+                            <option value="الجمعة">الجمعة</option>
+                          </select>
+
+                          {/* Time */}
+                          <input
+                            type="text"
+                            className="form-control"
+                            style={{ padding: '6px 8px', fontSize: '0.85rem' }}
+                            placeholder="مثال: 10:00 ص - 02:00 م"
+                            value={slot.time}
+                            onChange={(e) => handleScheduleChange(index, 'time', e.target.value)}
+                          />
+
+                          {/* Branch */}
+                          <select
+                            className="form-control"
+                            style={{ padding: '6px 8px', fontSize: '0.85rem' }}
+                            value={slot.branchId || branches[0]?.id}
+                            onChange={(e) => handleScheduleChange(index, 'branchId', e.target.value)}
+                          >
+                            {branches.map(b => (
+                              <option key={b.id} value={b.id}>{b.name}</option>
+                            ))}
+                          </select>
+
+                          {/* Delete Slot Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveScheduleSlot(index)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: 'var(--rose-600)',
+                              cursor: 'pointer',
+                              fontSize: '1.1rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              padding: '4px'
+                            }}
+                            title="حذف هذا الموعد"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
               <div className="modal-footer">
-                <button type="submit" className="btn btn-primary">حفظ الطبيب</button>
-                <button type="button" className="btn btn-outline" onClick={() => setIsNewDoctorModalOpen(false)}>إلغاء</button>
+                <button type="submit" className="btn btn-primary">
+                  {editingDoctor ? 'حفظ تعديلات الطبيب والمواعيد' : 'حفظ الطبيب والجدول'}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={() => { setIsNewDoctorModalOpen(false); setEditingDoctor(null); }}
+                >
+                  إلغاء
+                </button>
               </div>
             </form>
           </div>

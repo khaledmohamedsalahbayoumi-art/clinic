@@ -1,7 +1,7 @@
 {
-  "name": "medicalhub-clinic",
+  "name": "clini-tech",
   "version": "1.0.0",
-  "description": "Full-Stack Medical Center and Clinic Management System with PWA",
+  "description": "Clini-Tech - Advanced Medical Center and Clinic Management System",
   "scripts": {
     "install:all": "npm install --prefix backend && npm install --prefix frontend",
     "build": "cd frontend && npm install && npm run build && cd ../backend && npm install",

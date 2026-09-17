@@ -58,26 +58,22 @@ export default function LoginView({ onLoginSuccess, onSwitchToClient }) {
       }}>
         {/* Header & Logo */}
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <div style={{
-            width: '64px',
-            height: '64px',
-            borderRadius: '20px',
-            background: 'var(--primary-gradient)',
-            color: '#ffffff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '2rem',
-            margin: '0 auto 16px',
-            boxShadow: '0 8px 20px rgba(2, 132, 199, 0.35)'
-          }}>
-            🏥
-          </div>
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--text-main)', marginBottom: '6px' }}>
-            تسجيل الدخول لمنظومة الإدارة
+          <img
+            src="/logo.png"
+            alt="Clini-Tech كليني تك"
+            style={{
+              maxHeight: '80px',
+              maxWidth: '260px',
+              objectFit: 'contain',
+              margin: '0 auto 16px',
+              display: 'block'
+            }}
+          />
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--text-main)', marginBottom: '6px' }}>
+            منظومة Clini-Tech الطبية
           </h2>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-            أدخل اسم المستخدم وكلمة المرور للوصول إلى لوحة التحكم والعيادات
+            إدارة أسهل.. رعاية أفضل | تسجيل الدخول للوحة التحكم
           </p>
         </div>
 
@@ -116,27 +112,9 @@ export default function LoginView({ onLoginSuccess, onSwitchToClient }) {
           </div>
 
           <div className="form-group" style={{ marginBottom: '24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-              <label className="form-label" style={{ margin: 0 }}>كلمة المرور (Password)</label>
-              <button
-                type="button"
-                onClick={() => setShowLoginPassword(!showLoginPassword)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '0.82rem',
-                  color: 'var(--primary-600)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  padding: 0,
-                  fontWeight: 600
-                }}
-              >
-                {showLoginPassword ? '🙈 إخفاء' : '👁️ إظهار'}
-              </button>
-            </div>
+            <label className="form-label" style={{ display: 'block', marginBottom: '8px', fontWeight: 700 }}>
+              كلمة المرور (Password)
+            </label>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <input
                 id="input-login-password"

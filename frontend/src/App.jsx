@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
+import Sidebar from './components/Sidebar';
 import DashboardView from './components/DashboardView';
 import QueueView from './components/QueueView';
 import PatientsView from './components/PatientsView';
@@ -12,6 +13,7 @@ import VitalsModal from './components/VitalsModal';
 import LoginView from './components/LoginView';
 import BottomNav from './components/BottomNav';
 import PwaInstallPrompt from './components/PwaInstallPrompt';
+import MultiDeviceModal from './components/MultiDeviceModal';
 import { api } from './services/api';
 
 export default function App() {
@@ -27,6 +29,8 @@ export default function App() {
 
   const [selectedBranch, setSelectedBranch] = useState('all');
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Master Data States
   const [users, setUsers] = useState([]);
@@ -42,6 +46,7 @@ export default function App() {
 
   // Modals & Enhanced Features States
   const [isWaitingScreenOpen, setIsWaitingScreenOpen] = useState(false);
+  const [isMultiDeviceModalOpen, setIsMultiDeviceModalOpen] = useState(false);
   const [activeVitalsApt, setActiveVitalsApt] = useState(null);
   const [activePrescriptionData, setActivePrescriptionData] = useState(null);
   const [isQuickBookingModalOpen, setIsQuickBookingModalOpen] = useState(false);
@@ -153,22 +158,61 @@ export default function App() {
   // Action: Delete user
   const handleDeleteUser = async (id) => {
     await api.deleteUser(id);
-    const updatedUsers = await api.getUsers();
-    setUsers(updatedUsers);
+    await loadAllData();
+  };
+
+  // Action: Delete Doctor
+  const handleDeleteDoctor = async (id) => {
+    await api.deleteDoctor(id);
+    await loadAllData();
   };
 
   // Action: Add Branch
   const handleAddBranch = async (data) => {
     await api.createBranch(data);
-    const updatedBranches = await api.getBranches();
-    setBranches(updatedBranches);
+    await loadAllData();
+  };
+
+  // Action: Update Branch
+  const handleUpdateBranch = async (id, data) => {
+    await api.updateBranch(id, data);
+    await loadAllData();
+  };
+
+  // Action: Delete Branch
+  const handleDeleteBranch = async (id) => {
+    await api.deleteBranch(id);
+    await loadAllData();
   };
 
   // Action: Add Doctor
   const handleAddDoctor = async (data) => {
     await api.createDoctor(data);
-    const updatedDoctors = await api.getDoctors();
-    setDoctors(updatedDoctors);
+    await loadAllData();
+  };
+
+  // Action: Update Doctor
+  const handleUpdateDoctor = async (id, data) => {
+    await api.updateDoctor(id, data);
+    await loadAllData();
+  };
+
+  // Action: Add Clinic
+  const handleAddClinic = async (data) => {
+    await api.createClinic(data);
+    await loadAllData();
+  };
+
+  // Action: Update Clinic
+  const handleUpdateClinic = async (id, data) => {
+    await api.updateClinic(id, data);
+    await loadAllData();
+  };
+
+  // Action: Delete Clinic
+  const handleDeleteClinic = async (id) => {
+    await api.deleteClinic(id);
+    await loadAllData();
   };
 
   // Action: Update Appointment Status
@@ -234,107 +278,43 @@ export default function App() {
         selectedBranch={selectedBranch}
         setSelectedBranch={setSelectedBranch}
         branches={branches}
+        onOpenMultiDevice={() => setIsMultiDeviceModalOpen(true)}
+        onToggleSidebar={() => {
+          if (window.innerWidth <= 1024) {
+            setIsMobileSidebarOpen(prev => !prev);
+          } else {
+            setIsSidebarCollapsed(prev => !prev);
+          }
+        }}
       />
 
       {/* Main Container */}
-      <main style={{ flex: 1, maxWidth: '1440px', width: '100%', margin: '0 auto', padding: '24px 20px' }}>
-        {/* PWA Install Banner */}
-        <PwaInstallPrompt />
-        {activePortal === 'admin' ? (
-          /* Check if user is logged in */
-          !currentUser ? (
-            <LoginView
-              onLoginSuccess={(user) => {
-                setCurrentUser(user);
-                loadAllData();
-              }}
-              onSwitchToClient={() => setActivePortal('client')}
-            />
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {/* Admin Tabs Bar */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                borderBottom: '1px solid var(--border-light)',
-                paddingBottom: '8px',
-                flexWrap: 'wrap',
-                gap: '12px'
-              }}>
-                <div style={{ display: 'flex', gap: '8px', overflowX: 'auto' }}>
-                  {allowedTabs.includes('dashboard') && (
-                    <button
-                      id="tab-dashboard"
-                      className={`btn btn-sm ${activeTab === 'dashboard' ? 'btn-primary' : 'btn-outline'}`}
-                      style={{ borderRadius: 'var(--radius-full)' }}
-                      onClick={() => setActiveTab('dashboard')}
-                    >
-                      📊 لوحة المؤشرات (Dashboard)
-                    </button>
-                  )}
+      {activePortal === 'admin' && currentUser ? (
+        <div className="admin-layout-wrapper">
+          {/* Modern Medical Sidebar */}
+          <Sidebar
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            allowedTabs={allowedTabs}
+            waitingCount={dashboardStats?.waitingCount || 0}
+            currentUser={currentUser}
+            onLogout={handleLogout}
+            selectedBranch={selectedBranch}
+            branches={branches}
+            isCollapsed={isSidebarCollapsed}
+            setIsCollapsed={setIsSidebarCollapsed}
+            isMobileOpen={isMobileSidebarOpen}
+            setIsMobileOpen={setIsMobileSidebarOpen}
+            onNewBooking={() => setIsQuickBookingModalOpen(true)}
+            onOpenWaitingScreen={() => setIsWaitingScreenOpen(true)}
+            onOpenMultiDevice={() => setIsMultiDeviceModalOpen(true)}
+          />
 
-                  {allowedTabs.includes('queue') && (
-                    <button
-                      id="tab-queue"
-                      className={`btn btn-sm ${activeTab === 'queue' ? 'btn-primary' : 'btn-outline'}`}
-                      style={{ borderRadius: 'var(--radius-full)' }}
-                      onClick={() => setActiveTab('queue')}
-                    >
-                      📋 طابور الانتظار والكشوفات ({dashboardStats?.waitingCount || 0})
-                    </button>
-                  )}
-
-                  {allowedTabs.includes('patients') && (
-                    <button
-                      id="tab-patients"
-                      className={`btn btn-sm ${activeTab === 'patients' ? 'btn-primary' : 'btn-outline'}`}
-                      style={{ borderRadius: 'var(--radius-full)' }}
-                      onClick={() => setActiveTab('patients')}
-                    >
-                      📂 سجلات وملفات المرضى (EMR)
-                    </button>
-                  )}
-
-                  {allowedTabs.includes('prescriptions') && (
-                    <button
-                      id="tab-prescriptions"
-                      className={`btn btn-sm ${activeTab === 'prescriptions' ? 'btn-primary' : 'btn-outline'}`}
-                      style={{ borderRadius: 'var(--radius-full)' }}
-                      onClick={() => setActiveTab('prescriptions')}
-                    >
-                      📝 الروشتات والتحاليل
-                    </button>
-                  )}
-
-                  {allowedTabs.includes('finances') && (
-                    <button
-                      id="tab-finances"
-                      className={`btn btn-sm ${activeTab === 'finances' ? 'btn-primary' : 'btn-outline'}`}
-                      style={{ borderRadius: 'var(--radius-full)' }}
-                      onClick={() => setActiveTab('finances')}
-                    >
-                      💰 الخزينة والمصروفات
-                    </button>
-                  )}
-
-                  {allowedTabs.includes('settings') && (
-                    <button
-                      id="tab-settings"
-                      className={`btn btn-sm ${activeTab === 'settings' ? 'btn-primary' : 'btn-outline'}`}
-                      style={{ borderRadius: 'var(--radius-full)', backgroundColor: activeTab === 'settings' ? '#0f172a' : '#ffffff', color: activeTab === 'settings' ? '#ffffff' : '#0f172a' }}
-                      onClick={() => setActiveTab('settings')}
-                    >
-                      ⚙️ إدارة المستخدمين والصلاحيات
-                    </button>
-                  )}
-                </div>
-
-                {/* User Role Indicator */}
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  مرحباً بك، <strong>{currentUser.name}</strong> • الصلاحيات المفعلة: <strong>{allowedTabs.length} أقسام</strong>
-                </div>
-              </div>
+          {/* Admin Main Content Area */}
+          <div className="admin-main-content">
+            <div className="admin-page-container">
+              {/* PWA Install Banner */}
+              <PwaInstallPrompt onOpenMultiDevice={() => setIsMultiDeviceModalOpen(true)} />
 
               {/* Views Switching based on user's granted permissions */}
               {activeTab === 'dashboard' && allowedTabs.includes('dashboard') && (
@@ -414,13 +394,33 @@ export default function App() {
                   onSaveUser={handleSaveUser}
                   onDeleteUser={handleDeleteUser}
                   onAddBranch={handleAddBranch}
+                  onUpdateBranch={handleUpdateBranch}
+                  onDeleteBranch={handleDeleteBranch}
+                  onAddClinic={handleAddClinic}
+                  onUpdateClinic={handleUpdateClinic}
+                  onDeleteClinic={handleDeleteClinic}
                   onAddDoctor={handleAddDoctor}
+                  onUpdateDoctor={handleUpdateDoctor}
+                  onDeleteDoctor={handleDeleteDoctor}
                 />
               )}
             </div>
-          )
-        ) : (
-          /* Client Portal View */
+          </div>
+        </div>
+      ) : activePortal === 'admin' && !currentUser ? (
+        <main style={{ flex: 1, maxWidth: '1440px', width: '100%', margin: '0 auto', padding: '24px 20px' }}>
+          <PwaInstallPrompt />
+          <LoginView
+            onLoginSuccess={(user) => {
+              setCurrentUser(user);
+              loadAllData();
+            }}
+            onSwitchToClient={() => setActivePortal('client')}
+          />
+        </main>
+      ) : (
+        <main style={{ flex: 1, maxWidth: '1440px', width: '100%', margin: '0 auto', padding: '24px 20px' }}>
+          <PwaInstallPrompt />
           <ClientPortalView
             doctors={doctors}
             clinics={clinics}
@@ -433,8 +433,8 @@ export default function App() {
               setActiveTab('prescriptions');
             }}
           />
-        )}
-      </main>
+        </main>
+      )}
 
       {/* Waiting Room TV Fullscreen Component */}
       {isWaitingScreenOpen && (
@@ -571,15 +571,30 @@ export default function App() {
       <footer style={{
         borderTop: '1px solid var(--border-light)',
         backgroundColor: '#ffffff',
-        padding: '20px',
+        padding: '24px 20px',
         textAlign: 'center',
         fontSize: '0.85rem',
-        color: 'var(--text-muted)'
+        color: 'var(--text-muted)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '8px'
       }}>
+        <img
+          src="/logo.png"
+          alt="Clini-Tech"
+          style={{ height: '36px', maxWidth: '160px', objectFit: 'contain' }}
+        />
         <div>
-          ميديكال هاب © {new Date().getFullYear()} - نظام إدارة المراكز الطبية والعيادات المتعددة الفروع
+          Clini-Tech (كليني تك) © {new Date().getFullYear()} • إدارة أسهل.. رعاية أفضل • نظام إدارة المراكز الطبية والعيادات
         </div>
       </footer>
+
+      {/* Multi-Device & WebApp Install Modal */}
+      <MultiDeviceModal
+        isOpen={isMultiDeviceModalOpen}
+        onClose={() => setIsMultiDeviceModalOpen(false)}
+      />
 
       {/* Mobile Native App Bottom Navigation Bar */}
       <BottomNav

@@ -1,20 +1,20 @@
 {
-  "name": "ميديكال هاب | نظام العيادات والمراكز الطبية",
-  "short_name": "ميديكال هاب",
-  "description": "المنظومة السحابية المتكاملة لإدارة المراكز الطبية والعيادات التخصصية وحجوزات المرضى",
+  "name": "Clini-Tech | كليني تك - نظام المراكز الطبية والعيادات",
+  "short_name": "Clini-Tech",
+  "description": "إدارة أسهل.. رعاية أفضل - المنظومة السحابية المتكاملة لإدارة المراكز الطبية والعيادات التخصصية",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f8fafc",
-  "theme_color": "#0284c7",
+  "theme_color": "#0b3b60",
   "orientation": "any",
   "dir": "rtl",
   "lang": "ar",
   "categories": ["medical", "health", "productivity", "business"],
   "icons": [
     {
-      "src": "/icon.svg",
+      "src": "/logo.png",
       "sizes": "192x192 512x512 any",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ],

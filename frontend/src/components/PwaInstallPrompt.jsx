@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function PwaInstallPrompt() {
+export default function PwaInstallPrompt({ onOpenMultiDevice }) {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isIos, setIsIos] = useState(false);
@@ -32,7 +32,7 @@ export default function PwaInstallPrompt() {
     window.addEventListener('appinstalled', () => {
       setIsInstallable(false);
       setDeferredPrompt(null);
-      console.log('🎉 MedicalHub WebApp installed successfully!');
+      console.log('🎉 Clini-Tech WebApp installed successfully!');
     });
 
     return () => {
@@ -44,6 +44,8 @@ export default function PwaInstallPrompt() {
     if (!deferredPrompt) {
       if (isIos) {
         setShowIosGuide(true);
+      } else if (onOpenMultiDevice) {
+        onOpenMultiDevice();
       }
       return;
     }
@@ -67,26 +69,22 @@ export default function PwaInstallPrompt() {
   return (
     <div className="pwa-banner">
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div style={{
-          width: '38px',
-          height: '38px',
-          borderRadius: '10px',
-          background: 'var(--primary-gradient)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#fff',
-          fontSize: '1.2rem',
-          flexShrink: 0
-        }}>
-          📲
-        </div>
+        <img
+          src="/logo.png"
+          alt="Clini-Tech"
+          style={{
+            height: '38px',
+            maxWidth: '120px',
+            objectFit: 'contain',
+            flexShrink: 0
+          }}
+        />
         <div>
           <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--text-main)' }}>
-            تثبيت تطبيق ميديكال هاب (WebApp)
+            تثبيت تطبيق Clini-Tech (WebApp)
           </div>
           <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-            استخدم النظام كتطبيق مستقل على جهازك بدون متصفح لسرعة أعلى وسهولة وصول
+            إدارة أسهل.. رعاية أفضل • استخدم النظام كتطبيق مستقل على جهازك لسرعة أعلى وسهولة وصول
           </div>
         </div>
       </div>
@@ -99,6 +97,15 @@ export default function PwaInstallPrompt() {
         >
           ⬇️ تثبيت التطبيق الآن
         </button>
+        {onOpenMultiDevice && (
+          <button
+            className="btn btn-sm btn-outline"
+            style={{ borderRadius: 'var(--radius-full)', fontWeight: 700, padding: '6px 14px' }}
+            onClick={onOpenMultiDevice}
+          >
+            📲 فتح على أجهزة أخرى
+          </button>
+        )}
         <button
           onClick={handleDismiss}
           style={{

@@ -21,6 +21,40 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
+// Network & Multi-Device Info (لفتح النظام على أكثر من جهاز في نفس شبكة العيادة)
+app.get('/api/network-info', (req, res) => {
+  const os = require('os');
+  const nets = os.networkInterfaces();
+  const interfaces = [];
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      if (net.family === 'IPv4' && !net.internal) {
+        interfaces.push({
+          name,
+          ip: net.address,
+          url: `http://${net.address}:${PORT}`
+        });
+      }
+    }
+  }
+
+  // Find preferred IP (Wi-Fi, 192.168.x.x, etc.)
+  const preferred = interfaces.find(i => i.ip.startsWith('192.168.1.')) ||
+                    interfaces.find(i => i.name.toLowerCase().includes('wi-fi') || i.name.toLowerCase().includes('wlan')) ||
+                    interfaces.find(i => i.ip.startsWith('192.168.')) ||
+                    interfaces[0] ||
+                    { name: 'Localhost', ip: 'localhost', url: `http://localhost:${PORT}` };
+
+  res.json({
+    port: PORT,
+    localIp: preferred.ip,
+    localUrl: preferred.url,
+    clientPortalUrl: `${preferred.url}/?portal=client`,
+    waitingScreenUrl: `${preferred.url}/?screen=waiting`,
+    interfaces
+  });
+});
+
 // ------------------- AUTHENTICATION (تسجيل الدخول) -------------------
 app.post('/api/auth/login', (req, res) => {
   const store = getStore();
@@ -143,9 +177,16 @@ app.delete('/api/users/:id', (req, res) => {
     return res.status(400).json({ error: 'لا يمكن حذف الحساب الرئيسي للمالك' });
   }
 
+  // If user was a doctor or linked to doctor, also delete doctor profile
+  if (user.doctorId) {
+    store.doctors = store.doctors.filter(d => d.id !== user.doctorId);
+  } else if (user.role === 'doctor') {
+    store.doctors = store.doctors.filter(d => d.name !== user.name && d.phone !== user.phone);
+  }
+
   store.users = store.users.filter(u => u.id !== req.params.id);
   saveData();
-  res.json({ message: 'تم حذف المستخدم بنجاح' });
+  res.json({ message: 'تم حذف المستخدم والملف المرتبط به بنجاح' });
 });
 
 // ------------------- BRANCHES -------------------
@@ -158,6 +199,63 @@ app.get('/api/branches', (req, res) => {
 app.get('/api/clinics', (req, res) => {
   const store = getStore();
   res.json(store.clinics);
+});
+
+app.post('/api/clinics', (req, res) => {
+  const store = getStore();
+  const { name, icon, workingHours, description } = req.body;
+  if (!name) return res.status(400).json({ error: 'اسم العيادة مطلوب' });
+
+  const newClinic = {
+    id: 'cl_' + Date.now(),
+    name: name.trim(),
+    icon: icon || '🩺',
+    workingHours: workingHours || 'يومياً من 09:00 ص إلى 10:00 م',
+    description: description || ''
+  };
+
+  store.clinics.push(newClinic);
+  saveData();
+  res.status(201).json(newClinic);
+});
+
+app.put('/api/clinics/:id', (req, res) => {
+  const store = getStore();
+  const clinic = store.clinics.find(c => c.id === req.params.id);
+  if (!clinic) return res.status(404).json({ error: 'العيادة غير موجودة' });
+
+  const { name, icon, workingHours, description } = req.body;
+  const oldName = clinic.name;
+  if (name) clinic.name = name.trim();
+  if (icon) clinic.icon = icon;
+  if (workingHours !== undefined) clinic.workingHours = workingHours.trim();
+  if (description !== undefined) clinic.description = description.trim();
+
+  // Update clinicName in doctors belonging to this clinic
+  if (name && name !== oldName) {
+    store.doctors.forEach(d => {
+      if (d.clinicId === clinic.id) {
+        d.clinicName = clinic.name;
+      }
+    });
+  }
+
+  saveData();
+  res.json(clinic);
+});
+
+app.delete('/api/clinics/:id', (req, res) => {
+  const store = getStore();
+  const index = store.clinics.findIndex(c => c.id === req.params.id);
+  if (index === -1) return res.status(404).json({ error: 'العيادة غير موجودة' });
+
+  if (store.clinics.length <= 1) {
+    return res.status(400).json({ error: 'لا يمكن حذف العيادة الأخيرة' });
+  }
+
+  store.clinics.splice(index, 1);
+  saveData();
+  res.json({ message: 'تم حذف العيادة بنجاح' });
 });
 
 // ------------------- DOCTORS -------------------
@@ -185,6 +283,90 @@ app.get('/api/doctors/:id', (req, res) => {
   const doc = store.doctors.find(d => d.id === req.params.id);
   if (!doc) return res.status(404).json({ error: 'الطبيب غير موجود' });
   res.json(doc);
+});
+
+app.post('/api/doctors', (req, res) => {
+  const store = getStore();
+  const { name, title, clinicId, branchIds, consultationFee, followUpFee, phone, avatar, schedule } = req.body;
+
+  if (!name) return res.status(400).json({ error: 'اسم الطبيب مطلوب' });
+
+  const clinic = store.clinics.find(c => c.id === clinicId);
+  const clinicName = clinic ? clinic.name : 'العيادات التخصصية';
+
+  const newDoc = {
+    id: 'doc_' + Date.now(),
+    name: name.trim(),
+    title: title || 'أخصائي',
+    clinicId: clinicId || (store.clinics[0] ? store.clinics[0].id : 'cl_internal'),
+    clinicName,
+    branchIds: Array.isArray(branchIds) && branchIds.length > 0 ? branchIds : [store.branches[0]?.id || 'br_maadi'],
+    consultationFee: Number(consultationFee) || 300,
+    followUpFee: Number(followUpFee) || 100,
+    rating: 5.0,
+    reviewsCount: 1,
+    phone: phone ? phone.trim() : '',
+    avatar: avatar || '👨‍⚕️',
+    status: 'available',
+    experienceYears: 10,
+    education: 'ماجستير / زمالة تخصصية',
+    schedule: Array.isArray(schedule) ? schedule : [
+      { day: 'السبت', time: '10:00 ص - 02:00 م', branchId: store.branches[0]?.id || 'br_maadi' },
+      { day: 'الثلاثاء', time: '05:00 م - 09:00 م', branchId: store.branches[0]?.id || 'br_maadi' }
+    ]
+  };
+
+  store.doctors.push(newDoc);
+  saveData();
+  res.status(201).json(newDoc);
+});
+
+app.put('/api/doctors/:id', (req, res) => {
+  const store = getStore();
+  const doc = store.doctors.find(d => d.id === req.params.id);
+  if (!doc) return res.status(404).json({ error: 'الطبيب غير موجود' });
+
+  const { name, title, clinicId, branchIds, consultationFee, followUpFee, phone, avatar, status, schedule } = req.body;
+
+  if (name) doc.name = name.trim();
+  if (title !== undefined) doc.title = title.trim();
+  if (clinicId) {
+    doc.clinicId = clinicId;
+    const clinic = store.clinics.find(c => c.id === clinicId);
+    if (clinic) doc.clinicName = clinic.name;
+  }
+  if (Array.isArray(branchIds)) doc.branchIds = branchIds;
+  if (consultationFee !== undefined) doc.consultationFee = Number(consultationFee);
+  if (followUpFee !== undefined) doc.followUpFee = Number(followUpFee);
+  if (phone !== undefined) doc.phone = phone.trim();
+  if (avatar !== undefined) doc.avatar = avatar;
+  if (status !== undefined) doc.status = status;
+  if (Array.isArray(schedule)) doc.schedule = schedule;
+
+  // Also update corresponding user name if exists
+  const associatedUser = store.users.find(u => u.doctorId === doc.id);
+  if (associatedUser && name) {
+    associatedUser.name = doc.name;
+  }
+
+  saveData();
+  res.json(doc);
+});
+
+app.delete('/api/doctors/:id', (req, res) => {
+  const store = getStore();
+  const docId = req.params.id;
+  const docIndex = store.doctors.findIndex(d => d.id === docId);
+  if (docIndex === -1) return res.status(404).json({ error: 'الطبيب غير موجود' });
+
+  // Remove doctor
+  store.doctors.splice(docIndex, 1);
+
+  // Also remove user account associated with this doctor if exists
+  store.users = store.users.filter(u => u.doctorId !== docId);
+
+  saveData();
+  res.json({ message: 'تم حذف الطبيب وحسابه بنجاح' });
 });
 
 // ------------------- PATIENTS -------------------
@@ -682,10 +864,9 @@ app.post('/api/lab-requests', (req, res) => {
   res.status(201).json(newRequest);
 });
 
-// ------------------- MANAGEMENT (إضافة فروع وأطباء) -------------------
 app.post('/api/branches', (req, res) => {
   const store = getStore();
-  const { name, address, phone } = req.body;
+  const { name, address, phone, isMain } = req.body;
   if (!name) return res.status(400).json({ error: 'اسم الفرع مطلوب' });
 
   const newBranch = {
@@ -693,17 +874,59 @@ app.post('/api/branches', (req, res) => {
     name: name.trim(),
     address: address || '',
     phone: phone || '',
-    isMain: false
+    isMain: Boolean(isMain)
   };
+
+  if (isMain) {
+    store.branches.forEach(b => { b.isMain = false; });
+  }
 
   store.branches.push(newBranch);
   saveData();
   res.status(201).json(newBranch);
 });
 
+app.put('/api/branches/:id', (req, res) => {
+  const store = getStore();
+  const branch = store.branches.find(b => b.id === req.params.id);
+  if (!branch) return res.status(404).json({ error: 'الفرع غير موجود' });
+
+  const { name, address, phone, isMain } = req.body;
+  if (name) branch.name = name.trim();
+  if (address !== undefined) branch.address = address.trim();
+  if (phone !== undefined) branch.phone = phone.trim();
+
+  if (isMain) {
+    store.branches.forEach(b => { b.isMain = (b.id === branch.id); });
+  } else if (isMain === false && branch.isMain) {
+    branch.isMain = false;
+  }
+
+  saveData();
+  res.json(branch);
+});
+
+app.delete('/api/branches/:id', (req, res) => {
+  const store = getStore();
+  const branchIndex = store.branches.findIndex(b => b.id === req.params.id);
+  if (branchIndex === -1) return res.status(404).json({ error: 'الفرع غير موجود' });
+
+  if (store.branches.length <= 1) {
+    return res.status(400).json({ error: 'لا يمكن حذف الفرع الأخير، يجب وجود فرع واحد على الأقل في المركز' });
+  }
+
+  const deleted = store.branches.splice(branchIndex, 1)[0];
+  if (deleted.isMain && store.branches.length > 0) {
+    store.branches[0].isMain = true;
+  }
+
+  saveData();
+  res.json({ message: 'تم حذف الفرع بنجاح' });
+});
+
 app.post('/api/doctors', (req, res) => {
   const store = getStore();
-  const { name, title, clinicId, branchIds, consultationFee, phone, avatar } = req.body;
+  const { name, title, clinicId, branchIds, consultationFee, phone, avatar, schedule } = req.body;
   if (!name || !clinicId) return res.status(400).json({ error: 'اسم الطبيب والتخصص مطلوبان' });
 
   const clinic = store.clinics.find(c => c.id === clinicId);
@@ -724,15 +947,43 @@ app.post('/api/doctors', (req, res) => {
     status: 'available',
     experienceYears: 10,
     education: 'استشاري معتمد',
-    schedule: [
-      { day: 'السبت', time: '10:00 ص - 03:00 م', branchId: 'br_maadi' },
-      { day: 'الثلاثاء', time: '04:00 م - 09:00 م', branchId: 'br_maadi' }
+    schedule: Array.isArray(schedule) && schedule.length > 0 ? schedule : [
+      { day: 'السبت', time: '10:00 ص - 03:00 م', branchId: (branchIds && branchIds[0]) || 'br_maadi' },
+      { day: 'الثلاثاء', time: '04:00 م - 09:00 م', branchId: (branchIds && branchIds[0]) || 'br_maadi' }
     ]
   };
 
   store.doctors.push(newDoc);
   saveData();
   res.status(201).json(newDoc);
+});
+
+app.put('/api/doctors/:id', (req, res) => {
+  const store = getStore();
+  const doc = store.doctors.find(d => d.id === req.params.id);
+  if (!doc) return res.status(404).json({ error: 'الطبيب غير موجود' });
+
+  const { name, title, clinicId, branchIds, consultationFee, followUpFee, phone, avatar, status, schedule, experienceYears, education } = req.body;
+
+  if (name) doc.name = name.trim();
+  if (title !== undefined) doc.title = title.trim();
+  if (clinicId) {
+    doc.clinicId = clinicId;
+    const clinic = store.clinics.find(c => c.id === clinicId);
+    if (clinic) doc.clinicName = clinic.name;
+  }
+  if (Array.isArray(branchIds)) doc.branchIds = branchIds;
+  if (consultationFee !== undefined) doc.consultationFee = Number(consultationFee) || doc.consultationFee;
+  if (followUpFee !== undefined) doc.followUpFee = Number(followUpFee);
+  if (phone !== undefined) doc.phone = phone.trim();
+  if (avatar !== undefined) doc.avatar = avatar;
+  if (status !== undefined) doc.status = status;
+  if (Array.isArray(schedule)) doc.schedule = schedule;
+  if (experienceYears !== undefined) doc.experienceYears = Number(experienceYears) || doc.experienceYears;
+  if (education !== undefined) doc.education = education;
+
+  saveData();
+  res.json(doc);
 });
 
 // ------------------- PRODUCTION STATIC ASSETS & SPA ROUTING -------------------

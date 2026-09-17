@@ -85,24 +85,25 @@ export default function WaitingRoomScreen({ appointments, branches, onClose }) {
         {/* Brand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <div style={{
-            width: '52px',
-            height: '52px',
-            borderRadius: '16px',
-            background: 'var(--primary-gradient)',
+            background: 'rgba(255, 255, 255, 0.96)',
+            padding: '6px 16px',
+            borderRadius: '14px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '1.8rem',
-            boxShadow: '0 0 25px rgba(2, 132, 199, 0.5)'
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.25)'
           }}>
-            🏥
+            <img
+              src="/logo.png"
+              alt="Clini-Tech كليني تك"
+              style={{ height: '46px', maxWidth: '210px', objectFit: 'contain', display: 'block' }}
+            />
           </div>
           <div>
-            <h1 style={{ fontSize: '1.6rem', fontWeight: 900, color: '#ffffff', letterSpacing: '-0.02em' }}>
-              ميديكال هاب التخصصي
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#ffffff', letterSpacing: '-0.02em', margin: 0 }}>
+              شاشة نداء المرضى
             </h1>
-            <p style={{ fontSize: '0.9rem', color: '#94a3b8' }}>
-              شاشة نداء المرضى وصالة الانتظار الذكية
+            <p style={{ fontSize: '0.85rem', color: '#94a3b8', margin: '3px 0 0 0' }}>
+              صالة الانتظار الذكية • Clini-Tech
             </p>
           </div>
         </div>
@@ -362,7 +363,7 @@ export default function WaitingRoomScreen({ appointments, branches, onClose }) {
             fontSize: '0.82rem',
             color: '#64748b'
           }}>
-            نظام شاشات الانتظار الذكي • ميديكال هاب للرعاية الطبية
+            نظام شاشات الانتظار الذكي • Clini-Tech (إدارة أسهل.. رعاية أفضل)
           </div>
         </div>
       </div>

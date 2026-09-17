@@ -8,13 +8,6 @@
       "isMain": true
     },
     {
-      "id": "br_nasr_city",
-      "name": "فرع مدينة نصر",
-      "address": "شارع عباس العقاد، بجوار الجامعة العمالية",
-      "phone": "0222718002",
-      "isMain": false
-    },
-    {
       "id": "br_tagamoa",
       "name": "فرع التجمع الخامس",
       "address": "مجمع الميديكال بارك، شارع التسعين الشمالي",
@@ -167,38 +160,6 @@
       ]
     },
     {
-      "id": "doc_4",
-      "name": "د. رانيا الشريف",
-      "title": "استشارية الأمراض الجلدية والتجميل والعلاج بالليزر",
-      "clinicId": "cl_derma",
-      "clinicName": "عيادة الجلدية",
-      "branchIds": [
-        "br_maadi",
-        "br_tagamoa"
-      ],
-      "consultationFee": 400,
-      "followUpFee": 150,
-      "rating": 4.92,
-      "reviewsCount": 165,
-      "phone": "01009876544",
-      "avatar": "👩‍⚕️",
-      "status": "busy",
-      "experienceYears": 14,
-      "education": "ماجستير الأمراض الجلدية والتناسلية والليزر - قصر العيني",
-      "schedule": [
-        {
-          "day": "الأحد",
-          "time": "02:00 م - 08:00 م",
-          "branchId": "br_maadi"
-        },
-        {
-          "day": "الأربعاء",
-          "time": "02:00 م - 08:00 م",
-          "branchId": "br_tagamoa"
-        }
-      ]
-    },
-    {
       "id": "doc_5",
       "name": "د. كريم عبد العزيز",
       "title": "استشاري أمراض القلب والأوعية الدموية والقسطرة التداخلية",
@@ -264,6 +225,16 @@
     }
   ],
   "patients": [
+    {
+      "id": "pat_1789615590517",
+      "code": "MED-1006",
+      "name": "محمد",
+      "phone": "064868565465",
+      "chronicDiseases": [],
+      "allergies": [],
+      "currentMedications": [],
+      "createdAt": "2026-09-17"
+    },
     {
       "id": "pat_1789275370558",
       "code": "MED-1005",
@@ -391,6 +362,29 @@
   ],
   "appointments": [
     {
+      "id": "apt_1789615590517",
+      "code": "APT-2026-007",
+      "patientId": "pat_1789615590517",
+      "patientName": "محمد",
+      "patientPhone": "064868565465",
+      "doctorId": "doc_1",
+      "doctorName": "د. أحمد السقا",
+      "doctorAvatar": "👨‍⚕️",
+      "clinicId": "cl_internal",
+      "clinicName": "عيادة الباطنة",
+      "branchId": "br_maadi",
+      "branchName": "فرع المعادي الرئيسي",
+      "date": "2026-09-17",
+      "timeSlot": "لحظي ",
+      "type": "كشف جديد",
+      "status": "completed",
+      "queueNumber": 1,
+      "fee": 450,
+      "paymentStatus": "paid",
+      "notes": "",
+      "createdAt": "2026-09-17T03:26:30.517Z"
+    },
+    {
       "id": "apt_1789275370558",
       "code": "APT-2026-006",
       "patientId": "pat_1789275370558",
@@ -406,7 +400,7 @@
       "date": "2026-09-13",
       "timeSlot": "01:00 م",
       "type": "كشف جديد",
-      "status": "waiting",
+      "status": "completed",
       "queueNumber": 3,
       "fee": 450,
       "paymentStatus": "paid",
@@ -429,7 +423,7 @@
       "date": "2026-09-13",
       "timeSlot": "10:30 ص",
       "type": "كشف جديد",
-      "status": "waiting",
+      "status": "completed",
       "queueNumber": 1,
       "fee": 450,
       "paymentStatus": "paid",
@@ -451,7 +445,7 @@
       "date": "2026-09-13",
       "timeSlot": "11:00 ص",
       "type": "متابعة سكر وضغط",
-      "status": "in_progress",
+      "status": "completed",
       "queueNumber": 2,
       "fee": 150,
       "paymentStatus": "paid",
@@ -473,7 +467,7 @@
       "date": "2026-09-13",
       "timeSlot": "12:30 م",
       "type": "فحص دوري",
-      "status": "waiting",
+      "status": "completed",
       "queueNumber": 1,
       "fee": 350,
       "paymentStatus": "paid",
@@ -495,7 +489,7 @@
       "date": "2026-09-13",
       "timeSlot": "04:30 م",
       "type": "كشف جديد",
-      "status": "confirmed",
+      "status": "completed",
       "queueNumber": 1,
       "fee": 500,
       "paymentStatus": "unpaid",
@@ -596,6 +590,16 @@
   ],
   "transactions": [
     {
+      "id": "tx_1789615590517",
+      "branchId": "br_maadi",
+      "type": "income",
+      "category": "كشف عيادة الباطنة",
+      "amount": 450,
+      "patientName": "محمد",
+      "date": "2026-09-17",
+      "recordedBy": "الاستقبال"
+    },
+    {
       "id": "tx_1789275370558",
       "branchId": "br_maadi",
       "type": "income",
@@ -691,9 +695,9 @@
       "id": "usr_1",
       "username": "owner",
       "password": "2026",
-      "name": "د. خالد السقا",
+      "name": "Khaled",
       "role": "owner",
-      "title": "المالك والمشرف العام للمركز",
+      "title": "developer",
       "branchId": "all",
       "phone": "01012345671",
       "permissions": [
@@ -710,83 +714,6 @@
         "settings:manage"
       ],
       "createdAt": "2026-01-01",
-      "doctorId": ""
-    },
-    {
-      "id": "usr_2",
-      "username": "manager_maadi",
-      "password": "123456",
-      "name": "أ. طارق رضوان",
-      "role": "manager",
-      "title": "مدير فرع المعادي",
-      "branchId": "br_maadi",
-      "phone": "01012345672",
-      "permissions": [
-        "dashboard:view",
-        "queue:view",
-        "queue:manage",
-        "patients:view",
-        "patients:sensitive",
-        "patients:create",
-        "prescriptions:view",
-        "finances:view",
-        "finances:create"
-      ],
-      "createdAt": "2026-01-05"
-    },
-    {
-      "id": "usr_3",
-      "username": "reception",
-      "password": "123456",
-      "name": "سلمى إبراهيم",
-      "role": "reception",
-      "title": "مسؤولة الاستقبال والتحصيل",
-      "branchId": "br_maadi",
-      "phone": "01012345673",
-      "permissions": [
-        "dashboard:view",
-        "queue:view",
-        "queue:manage",
-        "patients:view",
-        "patients:create"
-      ],
-      "createdAt": "2026-01-10"
-    },
-    {
-      "id": "usr_4",
-      "username": "dr_ahmed",
-      "password": "123456",
-      "name": "د. أحمد السقا",
-      "role": "doctor",
-      "doctorId": "doc_1",
-      "title": "استشاري أول أمراض الباطنة",
-      "branchId": "br_maadi",
-      "phone": "01009876541",
-      "permissions": [
-        "queue:view",
-        "queue:manage",
-        "patients:view",
-        "patients:sensitive",
-        "prescriptions:view",
-        "prescriptions:create"
-      ],
-      "createdAt": "2026-01-12"
-    },
-    {
-      "id": "usr_5",
-      "username": "accountant",
-      "password": "123456",
-      "name": "أ. هيثم كمال",
-      "role": "accountant",
-      "title": "المحاسب المالي",
-      "branchId": "all",
-      "phone": "01012345675",
-      "permissions": [
-        "dashboard:view",
-        "finances:view",
-        "finances:create"
-      ],
-      "createdAt": "2026-01-15",
       "doctorId": ""
     }
   ],

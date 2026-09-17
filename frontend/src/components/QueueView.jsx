@@ -38,10 +38,16 @@ export default function QueueView({
 
   // WhatsApp reminder generator
   const handleSendWhatsApp = (apt) => {
+    let cleanPhone = (apt.patientPhone || '').replace(/\D/g, '');
+    if (cleanPhone.startsWith('0')) {
+      cleanPhone = '2' + cleanPhone;
+    } else if (!cleanPhone.startsWith('2') && cleanPhone.length <= 11) {
+      cleanPhone = '20' + cleanPhone;
+    }
     const text = encodeURIComponent(
       `مرحباً بك أستاذ ${apt.patientName}، نود تذكيرك بموعد كشفك في المركز الطبي التخصصي (${apt.branchName}) لدى ${apt.doctorName} (${apt.clinicName}) اليوم في تمام الساعة ${apt.timeSlot}. رقم دورك في الطابور هو #${apt.queueNumber}. نتمنى لكم الشفاء العاجل.`
     );
-    const url = `https://wa.me/2${apt.patientPhone.replace(/\D/g, '')}?text=${text}`;
+    const url = `https://wa.me/${cleanPhone}?text=${text}`;
     window.open(url, '_blank');
   };
 
