@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="50%" stop-color="#0369a1"/>
+      <stop offset="100%" stop-color="#1e3a8a"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <!-- App Background -->
+  <rect width="512" height="512" rx="112" fill="url(#bg-grad)"/>
+  
+  <!-- Subtle circular glow -->
+  <circle cx="256" cy="256" r="180" fill="#ffffff" fill-opacity="0.06"/>
+  
+  <!-- Medical Cross with Shadow -->
+  <g filter="url(#shadow)">
+    <!-- Vertical Bar -->
+    <rect x="216" y="116" width="80" height="280" rx="28" fill="#ffffff"/>
+    <!-- Horizontal Bar -->
+    <rect x="116" y="216" width="280" height="80" rx="28" fill="#ffffff"/>
+  </g>
+  
+  <!-- Modern Pulse / ECG Line in center -->
+  <path d="M140 256 L205 256 L230 200 L256 310 L282 230 L305 256 L372 256" 
+        fill="none" 
+        stroke="#0284c7" 
+        stroke-width="14" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"/>
+        
+  <!-- Small Star of Health -->
+  <circle cx="390" cy="120" r="18" fill="#10b981"/>
+</svg>
