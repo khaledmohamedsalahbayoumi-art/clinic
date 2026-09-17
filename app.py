@@ -4,14 +4,32 @@ import socket
 import time
 from datetime import datetime
 from flask import Flask, request, jsonify, send_from_directory, send_file
-from flask_cors import CORS
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FRONTEND_DIST = os.path.join(BASE_DIR, 'frontend', 'dist')
 DATA_FILE = os.path.join(BASE_DIR, 'backend', 'data', 'clinic_data.json')
 
 app = Flask(__name__, static_folder=FRONTEND_DIST)
-CORS(app)
+
+# CORS Support (supports flask_cors or native Flask headers fallback)
+try:
+    from flask_cors import CORS
+    CORS(app)
+except Exception:
+    @app.after_request
+    def add_cors(response):
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+        response.headers['Access-Control-Allow-Methods'] = 'GET,PUT,POST,DELETE,OPTIONS,PATCH'
+        return response
+
+    @app.before_request
+    def handle_options():
+        if request.method == "OPTIONS":
+            resp = app.make_default_options_response()
+            resp.headers['Access-Control-Allow-Origin'] = '*'
+            resp.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+            resp.headers['Access-Control-Allow-Methods'] = 'GET,PUT,POST,DELETE,OPTIONS,PATCH'
+            return resp
 
 # ------------------- DATA STORE (قاعدة البيانات وملف JSON) -------------------
 _memory_store = None
