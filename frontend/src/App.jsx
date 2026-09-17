@@ -14,6 +14,8 @@ import LoginView from './components/LoginView';
 import BottomNav from './components/BottomNav';
 import PwaInstallPrompt from './components/PwaInstallPrompt';
 import MultiDeviceModal from './components/MultiDeviceModal';
+import CustomDialog from './components/CustomDialog';
+import './utils/dialog';
 import { api } from './services/api';
 
 export default function App() {
@@ -64,29 +66,41 @@ export default function App() {
     try {
       const [usrs, brs, cls, docs, pts, apts, rxs, labs, txs, stats] = await Promise.all([
         api.getUsers().catch(() => []),
-        api.getBranches(),
-        api.getClinics(),
-        api.getDoctors(),
-        api.getPatients(),
-        api.getAppointments(),
-        api.getPrescriptions(),
+        api.getBranches().catch(() => []),
+        api.getClinics().catch(() => []),
+        api.getDoctors().catch(() => []),
+        api.getPatients().catch(() => []),
+        api.getAppointments().catch(() => []),
+        api.getPrescriptions().catch(() => []),
         api.getLabRequests().catch(() => []),
-        api.getTransactions(),
-        api.getDashboardStats(selectedBranch)
+        api.getTransactions().catch(() => []),
+        api.getDashboardStats(selectedBranch).catch(() => null)
       ]);
 
       setUsers(usrs || []);
-      setBranches(brs);
-      setClinics(cls);
-      setDoctors(docs);
-      setPatients(pts);
-      setAppointments(apts);
-      setPrescriptions(rxs);
+      setBranches(brs || []);
+      setClinics(cls || []);
+      setDoctors(docs || []);
+      setPatients(pts || []);
+      setAppointments(apts || []);
+      setPrescriptions(rxs || []);
       setLabRequests(labs || []);
-      setTransactions(txs);
-      setDashboardStats(stats);
+      setTransactions(txs || []);
+      setDashboardStats(stats || {
+        todayRevenue: 0,
+        todayExpenses: 0,
+        netProfit: 0,
+        waitingCount: 0,
+        completedCount: 0,
+        totalTodayAppointments: 0,
+        activeDoctorsCount: (docs || []).length,
+        totalPatients: (pts || []).length,
+        doctorPerformance: [],
+        branchBreakdown: [],
+        recentAppointments: []
+      });
 
-      if (docs.length > 0 && !quickBookingForm.doctorId) {
+      if (docs && docs.length > 0 && !quickBookingForm.doctorId) {
         setQuickBookingForm(prev => ({ ...prev, doctorId: docs[0].id }));
       }
     } catch (err) {
@@ -606,6 +620,9 @@ export default function App() {
         waitingCount={dashboardStats?.waitingCount || 0}
         currentUser={currentUser}
       />
+
+      {/* Modern Sleek Custom In-App Dialog / Modal */}
+      <CustomDialog />
     </div>
   );
 }

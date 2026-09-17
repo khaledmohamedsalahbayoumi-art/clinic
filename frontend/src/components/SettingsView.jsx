@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { showAlert, showConfirm } from '../utils/dialog';
 
 // All available system permissions
 const ALL_PERMISSIONS = [
@@ -124,11 +125,11 @@ export default function SettingsView({
   const handleUserSubmit = (e) => {
     e.preventDefault();
     if (!userForm.name || !userForm.username) {
-      alert('الاسم واسم المستخدم حقول مطلوبة');
+      showAlert('الاسم واسم المستخدم حقول مطلوبة لتسجيل الحساب.', 'بيانات ناقصة', 'warning');
       return;
     }
     if (!editingUser && !userForm.password) {
-      alert('كلمة المرور مطلوبة للمستخدم الجديد');
+      showAlert('كلمة المرور مطلوبة للمستخدم الجديد.', 'بيانات ناقصة', 'warning');
       return;
     }
 
@@ -516,9 +517,12 @@ export default function SettingsView({
                           <button
                             className="btn btn-danger btn-sm"
                             onClick={() => {
-                              if (confirm(`هل أنت متأكد من حذف المستخدم "${u.name}"؟`)) {
-                                onDeleteUser(u.id);
-                              }
+                              showConfirm(
+                                `هل أنت متأكد من حذف حساب المستخدم "${u.name}" (${u.username}) نهائياً من المنظومة؟`,
+                                () => onDeleteUser(u.id),
+                                'تأكيد حذف المستخدم',
+                                'danger'
+                              );
                             }}
                           >
                             🗑️
@@ -582,12 +586,15 @@ export default function SettingsView({
                     }}
                     onClick={() => {
                       if (branches.length <= 1) {
-                        alert('لا يمكن حذف الفرع الوحيد، يجب الإبقاء على فرع واحد على الأقل');
+                        showAlert('لا يمكن حذف الفرع الوحيد، يجب الإبقاء على فرع واحد على الأقل في المركز الطبي.', 'تنبيه من المنظومة', 'warning');
                         return;
                       }
-                      if (window.confirm(`هل أنت متأكد من حذف فرع (${b.name}) نهائياً؟`)) {
-                        onDeleteBranch(b.id);
-                      }
+                      showConfirm(
+                        `هل أنت متأكد من حذف فرع (${b.name}) نهائياً من المنظومة؟`,
+                        () => onDeleteBranch(b.id),
+                        'تأكيد حذف الفرع',
+                        'danger'
+                      );
                     }}
                   >
                     🗑️ حذف
@@ -676,17 +683,24 @@ export default function SettingsView({
                       }}
                       onClick={() => {
                         if (clinics.length <= 1) {
-                          alert('لا يمكن حذف العيادة الوحيدة المتبقية في المنظومة');
+                          showAlert('لا يمكن حذف العيادة الوحيدة المتبقية في المنظومة. يجب الإبقاء على عيادة أو تخصص واحد على الأقل.', 'تنبيه من المنظومة', 'warning');
                           return;
                         }
                         if (clinicDocs.length > 0) {
-                          if (!window.confirm(`هذه العيادة مرتبط بها (${clinicDocs.length}) أطباء. هل أنت متأكد من حذفها؟`)) {
-                            return;
-                          }
-                        } else if (!window.confirm(`هل أنت متأكد من حذف عيادة (${c.name}) نهائياً؟`)) {
-                          return;
+                          showConfirm(
+                            `هذه العيادة مرتبط بها (${clinicDocs.length}) أطباء مسجلين.\nهل أنت متأكد من حذفها بالكامل من النظام؟`,
+                            () => onDeleteClinic(c.id),
+                            'تأكيد حذف العيادة',
+                            'danger'
+                          );
+                        } else {
+                          showConfirm(
+                            `هل أنت متأكد من حذف عيادة (${c.name}) نهائياً من المنظومة؟`,
+                            () => onDeleteClinic(c.id),
+                            'تأكيد حذف العيادة',
+                            'danger'
+                          );
                         }
-                        onDeleteClinic(c.id);
                       }}
                     >
                       🗑️ حذف العيادة
@@ -824,9 +838,12 @@ export default function SettingsView({
                       fontWeight: 700
                     }}
                     onClick={() => {
-                      if (window.confirm(`هل أنت متأكد من حذف الطبيب (${doc.name}) وإزالته من العيادات والمركز نهائياً؟`)) {
-                        onDeleteDoctor(doc.id);
-                      }
+                      showConfirm(
+                        `هل أنت متأكد من حذف الطبيب (${doc.name}) وإزالته من كافة العيادات والمركز نهائياً؟`,
+                        () => onDeleteDoctor(doc.id),
+                        'تأكيد حذف الطبيب',
+                        'danger'
+                      );
                     }}
                     title="حذف الطبيب من المركز الطبي"
                   >
