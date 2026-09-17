@@ -8,8 +8,7 @@ export default function Navbar({
   selectedBranch,
   setSelectedBranch,
   branches,
-  onToggleSidebar,
-  onOpenMultiDevice
+  onToggleSidebar
 }) {
   return (
     <header style={{
@@ -98,29 +97,6 @@ export default function Navbar({
             🩺 بوابة المراجعين والكلينت
           </button>
         </div>
-
-        {/* Multi-Device & PWA WebApp Button */}
-        <button
-          id="btn-multi-device"
-          type="button"
-          className="btn btn-sm btn-outline"
-          onClick={onOpenMultiDevice}
-          style={{
-            borderColor: 'var(--primary-300)',
-            backgroundColor: 'var(--primary-50)',
-            color: 'var(--primary-700)',
-            fontWeight: 700,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            borderRadius: 'var(--radius-md)',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-          }}
-          title="فتح النظام على أجهزة متعددة (موبايل، تابلت، كمبيوتر) وتثبيت التطبيق"
-        >
-          <span style={{ fontSize: '1rem' }}>📲</span>
-          <span>ربط الأجهزة والتطبيق</span>
-        </button>
 
         {/* Admin User Info & Branch Selector */}
         {activePortal === 'admin' && currentUser && (
