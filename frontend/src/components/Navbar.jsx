@@ -8,7 +8,9 @@ export default function Navbar({
   selectedBranch,
   setSelectedBranch,
   branches,
-  onToggleSidebar
+  onToggleSidebar,
+  unreadMessagesCount = 0,
+  onOpenChat
 }) {
   return (
     <header style={{
@@ -23,28 +25,28 @@ export default function Navbar({
       <div style={{
         maxWidth: '1440px',
         margin: '0 auto',
-        padding: '12px 24px',
+        padding: '12px 20px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '16px'
+        gap: '16px',
+        flexWrap: 'wrap'
       }}>
-        {/* Brand & Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {activePortal === 'admin' && currentUser && (
+        {/* Brand & Mobile Hamburger */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          {currentUser && activePortal === 'admin' && (
             <button
-              type="button"
               id="btn-toggle-sidebar"
-              className="navbar-sidebar-toggle only-mobile"
+              className="btn btn-outline btn-sm sidebar-toggle-btn"
               onClick={onToggleSidebar}
-              title="فتح أو طي القائمة الجانبية"
+              style={{ padding: '8px 12px', fontSize: '1.1rem' }}
+              title="القائمة الجانبية"
             >
               ☰
             </button>
           )}
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <img
               src="/logo.png"
               alt="Clini-Tech كليني تك"
@@ -100,23 +102,69 @@ export default function Navbar({
 
         {/* Admin User Info & Branch Selector */}
         {activePortal === 'admin' && currentUser && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
-            {/* Branch Selector */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>الفرع:</span>
-              <select
-                id="select-branch"
-                className="form-control"
-                style={{ width: 'auto', padding: '6px 12px', fontSize: '0.88rem', fontWeight: 600 }}
-                value={selectedBranch}
-                onChange={(e) => setSelectedBranch(e.target.value)}
-              >
-                <option value="all">🌐 كل الفروع (مجمع)</option>
-                {branches.map(b => (
-                  <option key={b.id} value={b.id}>📍 {b.name}</option>
-                ))}
-              </select>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            {/* Branch Selector: only show if more than 1 branch */}
+            {branches && branches.length > 1 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>الفرع:</span>
+                <select
+                  id="select-branch"
+                  className="form-control"
+                  style={{ width: 'auto', padding: '6px 12px', fontSize: '0.88rem', fontWeight: 600 }}
+                  value={selectedBranch}
+                  onChange={(e) => setSelectedBranch(e.target.value)}
+                >
+                  <option value="all">🌐 كل الفروع (مجمع)</option>
+                  {branches.map(b => (
+                    <option key={b.id} value={b.id}>📍 {b.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Intercom Chat Button */}
+            <button
+              id="btn-navbar-intercom"
+              type="button"
+              className="btn btn-sm"
+              onClick={onOpenChat}
+              style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '7px',
+                backgroundColor: unreadMessagesCount > 0 ? '#f0f9ff' : '#ffffff',
+                border: unreadMessagesCount > 0 ? '1.5px solid #0284c7' : '1px solid #cbd5e1',
+                color: unreadMessagesCount > 0 ? '#0284c7' : '#334155',
+                padding: '6px 14px',
+                borderRadius: 'var(--radius-full)',
+                fontWeight: 700,
+                fontSize: '0.86rem',
+                cursor: 'pointer',
+                boxShadow: unreadMessagesCount > 0 ? '0 0 14px rgba(2, 132, 199, 0.25)' : '0 1px 3px rgba(0,0,0,0.05)',
+                transition: 'all 0.15s ease'
+              }}
+              title="فتح انتركم المحادثة الفورية بين الطبيب والاستقبال"
+            >
+              <span style={{ fontSize: '1.1rem' }}>💬</span>
+              <span>انتركم العيادة</span>
+              {unreadMessagesCount > 0 && (
+                <span
+                  style={{
+                    backgroundColor: '#ef4444',
+                    color: '#ffffff',
+                    fontSize: '0.72rem',
+                    fontWeight: 800,
+                    borderRadius: '10px',
+                    padding: '1px 6px',
+                    minWidth: '18px',
+                    textAlign: 'center'
+                  }}
+                >
+                  {unreadMessagesCount}
+                </span>
+              )}
+            </button>
 
             {/* Logged-in User Profile Badge */}
             <div style={{

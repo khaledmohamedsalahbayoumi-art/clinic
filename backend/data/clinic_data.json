@@ -1,50 +1,18 @@
 {
   "branches": [
     {
-      "id": "br_maadi",
-      "name": "فرع المعادي الرئيسي",
-      "address": "شارع النصر، دجلة، المعادي، القاهرة",
-      "phone": "0225198001",
+      "id": "br_main",
+      "name": "الفرع الرئيسي",
+      "address": "",
+      "phone": "",
       "isMain": true
-    },
-    {
-      "id": "br_tagamoa",
-      "name": "فرع التجمع الخامس",
-      "address": "مجمع الميديكال بارك، شارع التسعين الشمالي",
-      "phone": "0228128003",
-      "isMain": false
     }
   ],
   "clinics": [
     {
-      "id": "cl_internal",
-      "name": "عيادة الباطنة والجهاز الهضمي",
+      "id": "cl_main",
+      "name": "العيادة الرئيسية",
       "icon": "🩺"
-    },
-    {
-      "id": "cl_ortho",
-      "name": "عيادة العظام والمفاصل",
-      "icon": "🦴"
-    },
-    {
-      "id": "cl_pediatric",
-      "name": "عيادة طب الأطفال وحديثي الولادة",
-      "icon": "👶"
-    },
-    {
-      "id": "cl_cardio",
-      "name": "عيادة القلب والأوعية الدموية",
-      "icon": "❤️"
-    },
-    {
-      "id": "cl_derma",
-      "name": "عيادة الجلدية والتجميل والليزر",
-      "icon": "✨"
-    },
-    {
-      "id": "cl_dentistry",
-      "name": "عيادة طب وجراحة الأسنان",
-      "icon": "🦷"
     }
   ],
   "doctors": [],
@@ -79,5 +47,6 @@
       "doctorId": ""
     }
   ],
-  "labRequests": []
+  "labRequests": [],
+  "messages": []
 }

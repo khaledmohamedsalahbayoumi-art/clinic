@@ -245,5 +245,28 @@ export const api = {
   getNetworkInfo: async () => {
     const res = await fetch(`${API_BASE}/network-info`);
     return res.json();
+  },
+
+  // Internal Intercom Chat (محادثة الطبيب والاستقبال)
+  getChatMessages: async (limit = 100) => {
+    const res = await fetch(`${API_BASE}/chat/messages?limit=${limit}`);
+    return res.json();
+  },
+  sendChatMessage: async (data) => {
+    const res = await fetch(`${API_BASE}/chat/messages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return res.json();
+  },
+  markChatMessagesRead: async (readerRole) => {
+    const res = await fetch(`${API_BASE}/chat/messages/read`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ readerRole })
+    });
+    return res.json();
   }
 };
+

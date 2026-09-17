@@ -975,6 +975,67 @@ def get_dashboard_stats():
     })
 
 
+# ------------------- INTERNAL CHAT / INTERCOM (محادثة الطبيب والاستقبال) -------------------
+@app.route('/api/chat/messages', methods=['GET'])
+def get_chat_messages():
+    store = get_store()
+    messages = store.get('messages', [])
+    limit = int(request.args.get('limit', 100))
+    return jsonify(messages[-limit:])
+
+@app.route('/api/chat/messages', methods=['POST'])
+def send_chat_message():
+    store = get_store()
+    data = request.get_json() or {}
+    text = (data.get('text') or '').strip()
+    sender_name = data.get('senderName', 'المستخدم')
+    sender_role = data.get('senderRole', 'staff')
+    sender_id = data.get('senderId', '')
+    recipient_role = data.get('recipientRole', 'all')
+    msg_type = data.get('type', 'text') # 'text', 'quick_action', 'urgent'
+
+    if not text:
+        return jsonify({"error": "نص الرسالة مطلوب"}), 400
+
+    now = datetime.now()
+    hour = now.strftime('%I:%M')
+    am_pm = 'م' if now.strftime('%p') == 'PM' else 'ص'
+    time_str = f"{hour} {am_pm}"
+
+    new_msg = {
+        "id": f"msg_{int(time.time()*1000)}",
+        "senderId": sender_id,
+        "senderName": sender_name,
+        "senderRole": sender_role,
+        "recipientRole": recipient_role,
+        "text": text,
+        "type": msg_type,
+        "timeFormatted": time_str,
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "isRead": False
+    }
+
+    store.setdefault('messages', []).append(new_msg)
+    if len(store['messages']) > 500:
+        store['messages'] = store['messages'][-500:]
+
+    save_store()
+    return jsonify(new_msg), 201
+
+@app.route('/api/chat/messages/read', methods=['PATCH'])
+def mark_chat_messages_read():
+    store = get_store()
+    data = request.get_json() or {}
+    reader_role = data.get('readerRole', '')
+
+    for msg in store.get('messages', []):
+        if reader_role and msg.get('senderRole') != reader_role:
+            msg['isRead'] = True
+
+    save_store()
+    return jsonify({"success": True, "message": "تم تحديث حالة القراءة"})
+
+
 # ------------------- STATIC FILES & SPA FALLBACK -------------------
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')

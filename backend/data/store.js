@@ -3,19 +3,23 @@ const path = require('path');
 
 const DATA_FILE = path.join(__dirname, 'clinic_data.json');
 
-// Default clean structure for fresh clinic deployment
+// Default clean structure for fresh single-clinic deployment
 const initialData = {
   branches: [
-    { id: 'br_maadi', name: 'فرع المعادي الرئيسي', address: 'شارع النصر، دجلة، المعادي، القاهرة', phone: '0225198001', isMain: true },
-    { id: 'br_tagamoa', name: 'فرع التجمع الخامس', address: 'مجمع الميديكال بارك، شارع التسعين الشمالي', phone: '0228128003', isMain: false }
+    {
+      id: 'br_main',
+      name: 'الفرع الرئيسي',
+      address: '',
+      phone: '',
+      isMain: true
+    }
   ],
   clinics: [
-    { id: 'cl_internal', name: 'عيادة الباطنة والجهاز الهضمي', icon: '🩺' },
-    { id: 'cl_ortho', name: 'عيادة العظام والمفاصل', icon: '🦴' },
-    { id: 'cl_pediatric', name: 'عيادة طب الأطفال وحديثي الولادة', icon: '👶' },
-    { id: 'cl_cardio', name: 'عيادة القلب والأوعية الدموية', icon: '❤️' },
-    { id: 'cl_derma', name: 'عيادة الجلدية والتجميل والليزر', icon: '✨' },
-    { id: 'cl_dentistry', name: 'عيادة طب وجراحة الأسنان', icon: '🦷' }
+    {
+      id: 'cl_main',
+      name: 'العيادة الرئيسية',
+      icon: '🩺'
+    }
   ],
   doctors: [],
   patients: [],
@@ -23,6 +27,7 @@ const initialData = {
   prescriptions: [],
   transactions: [],
   labRequests: [],
+  messages: [],
   users: [
     {
       id: 'usr_1',
@@ -63,6 +68,10 @@ function loadData() {
       memoryStore = JSON.parse(content);
       if (!memoryStore.users || memoryStore.users.length === 0) {
         memoryStore.users = JSON.parse(JSON.stringify(initialData.users));
+        saveData();
+      }
+      if (!memoryStore.messages) {
+        memoryStore.messages = [];
         saveData();
       }
     } else {

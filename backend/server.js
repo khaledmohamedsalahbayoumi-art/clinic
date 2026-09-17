@@ -986,6 +986,63 @@ app.put('/api/doctors/:id', (req, res) => {
   res.json(doc);
 });
 
+// ------------------- INTERNAL CHAT / INTERCOM (محادثة الطبيب والاستقبال) -------------------
+app.get('/api/chat/messages', (req, res) => {
+  const store = getStore();
+  const messages = store.messages || [];
+  const limit = parseInt(req.query.limit, 10) || 100;
+  res.json(messages.slice(-limit));
+});
+
+app.post('/api/chat/messages', (req, res) => {
+  const store = getStore();
+  const { text, senderName, senderRole, senderId, recipientRole, type: msgType } = req.body;
+
+  if (!text || !text.trim()) {
+    return res.status(400).json({ error: 'نص الرسالة مطلوب' });
+  }
+
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+
+  const newMsg = {
+    id: `msg_${Date.now()}`,
+    senderId: senderId || '',
+    senderName: senderName || 'المستخدم',
+    senderRole: senderRole || 'staff',
+    recipientRole: recipientRole || 'all',
+    text: text.trim(),
+    type: msgType || 'text',
+    timeFormatted: timeStr,
+    timestamp: now.toISOString(),
+    isRead: false
+  };
+
+  if (!store.messages) store.messages = [];
+  store.messages.push(newMsg);
+  if (store.messages.length > 500) {
+    store.messages = store.messages.slice(-500);
+  }
+
+  saveData();
+  res.status(201).json(newMsg);
+});
+
+app.patch('/api/chat/messages/read', (req, res) => {
+  const store = getStore();
+  const { readerRole } = req.body;
+
+  if (store.messages) {
+    store.messages.forEach(msg => {
+      if (readerRole && msg.senderRole !== readerRole) {
+        msg.isRead = true;
+      }
+    });
+    saveData();
+  }
+  res.json({ success: true, message: 'تم تحديث حالة القراءة' });
+});
+
 // ------------------- PRODUCTION STATIC ASSETS & SPA ROUTING -------------------
 const frontendDist = path.join(__dirname, '../frontend/dist');
 if (fs.existsSync(frontendDist)) {

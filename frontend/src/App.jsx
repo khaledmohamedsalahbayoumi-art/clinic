@@ -15,6 +15,7 @@ import BottomNav from './components/BottomNav';
 import PwaInstallPrompt from './components/PwaInstallPrompt';
 import MultiDeviceModal from './components/MultiDeviceModal';
 import CustomDialog from './components/CustomDialog';
+import InternalChatModal from './components/InternalChatModal';
 import './utils/dialog';
 import { api } from './services/api';
 
@@ -46,6 +47,10 @@ export default function App() {
   const [transactions, setTransactions] = useState([]);
   const [dashboardStats, setDashboardStats] = useState(null);
 
+  // Intercom / Internal Chat State
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+
   // Modals & Enhanced Features States
   const [isWaitingScreenOpen, setIsWaitingScreenOpen] = useState(false);
   const [isMultiDeviceModalOpen, setIsMultiDeviceModalOpen] = useState(false);
@@ -56,7 +61,7 @@ export default function App() {
     patientName: '',
     patientPhone: '',
     doctorId: '',
-    branchId: 'br_maadi',
+    branchId: 'br_main',
     timeSlot: '11:00 ص',
     type: 'كشف جديد'
   });
@@ -111,6 +116,40 @@ export default function App() {
   useEffect(() => {
     loadAllData();
   }, []);
+
+  // Poll chat messages in background every 4s for instant multi-device intercom
+  const loadChatMessages = async () => {
+    try {
+      const msgs = await api.getChatMessages();
+      if (Array.isArray(msgs)) setChatMessages(msgs);
+    } catch {
+      // non-fatal
+    }
+  };
+
+  useEffect(() => {
+    if (currentUser) {
+      loadChatMessages();
+      const interval = setInterval(loadChatMessages, 4000);
+      return () => clearInterval(interval);
+    }
+  }, [currentUser]);
+
+  // Compute unread messages count
+  const unreadMessagesCount = chatMessages.filter(
+    m => !m.isRead && m.senderRole !== currentUser?.role
+  ).length;
+
+  const handleSendChatMessage = async (msgData) => {
+    const newMsg = await api.sendChatMessage(msgData);
+    setChatMessages(prev => [...prev, newMsg]);
+    return newMsg;
+  };
+
+  const handleMarkChatRead = async (role) => {
+    await api.markChatMessagesRead(role);
+    setChatMessages(prev => prev.map(m => m.senderRole !== role ? { ...m, isRead: true } : m));
+  };
 
   // Re-fetch dashboard stats when selected branch changes
   useEffect(() => {
@@ -292,6 +331,8 @@ export default function App() {
         selectedBranch={selectedBranch}
         setSelectedBranch={setSelectedBranch}
         branches={branches}
+        unreadMessagesCount={unreadMessagesCount}
+        onOpenChat={() => setIsChatOpen(true)}
         onOpenMultiDevice={() => setIsMultiDeviceModalOpen(true)}
         onToggleSidebar={() => {
           if (window.innerWidth <= 1024) {
@@ -619,6 +660,16 @@ export default function App() {
         allowedTabs={allowedTabs}
         waitingCount={dashboardStats?.waitingCount || 0}
         currentUser={currentUser}
+      />
+
+      {/* Internal Intercom Chat Modal */}
+      <InternalChatModal
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        currentUser={currentUser}
+        messages={chatMessages}
+        onSendMessage={handleSendChatMessage}
+        onMarkRead={handleMarkChatRead}
       />
 
       {/* Modern Sleek Custom In-App Dialog / Modal */}
