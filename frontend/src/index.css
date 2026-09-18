@@ -1107,4 +1107,181 @@ select.form-control {
   }
 }
 
+/* ==========================================================================
+   Client Portal - Responsive Hero Banner & Layout
+   ========================================================================== */
+.client-hero-banner {
+  background: linear-gradient(135deg, #075985 0%, #0284c7 50%, #0d9488 100%);
+  color: #ffffff;
+  border-radius: var(--radius-xl);
+  padding: 34px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 12px 30px -8px rgba(2, 132, 199, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Ambient glow highlights */
+.client-hero-banner::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  left: -50px;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.client-hero-banner::after {
+  content: '';
+  position: absolute;
+  bottom: -60px;
+  right: -40px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(20, 184, 166, 0.25) 0%, rgba(20, 184, 166, 0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.client-hero-content {
+  max-width: 750px;
+  position: relative;
+  z-index: 1;
+}
+
+.client-hero-badge {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 5px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  color: #ffffff;
+}
+
+.client-hero-title {
+  font-size: clamp(1.3rem, 4vw, 2rem);
+  font-weight: 900;
+  line-height: 1.35;
+  margin-bottom: 10px;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.client-hero-desc {
+  font-size: clamp(0.88rem, 2vw, 1.05rem);
+  opacity: 0.94;
+  line-height: 1.6;
+  color: #ffffff;
+}
+
+.client-hero-tabs {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  position: relative;
+  z-index: 1;
+  flex-wrap: wrap;
+}
+
+.client-hero-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  border: 1.5px solid transparent;
+  text-align: center;
+  user-select: none;
+}
+
+.client-hero-tab-btn.active {
+  background-color: #ffffff;
+  color: var(--primary-700);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  border-color: #ffffff;
+}
+
+.client-hero-tab-btn.inactive {
+  background-color: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
+
+.client-hero-tab-btn.inactive:hover {
+  background-color: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+/* Doctors cards grid responsive */
+.doctors-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+/* Mobile Screen Specifics (<= 640px) */
+@media (max-width: 640px) {
+  .client-hero-banner {
+    padding: 22px 18px;
+    border-radius: var(--radius-lg);
+    gap: 12px;
+  }
+
+  .client-hero-badge {
+    font-size: 0.78rem;
+    padding: 4px 12px;
+    margin-bottom: 8px;
+  }
+
+  .client-hero-title {
+    font-size: 1.25rem;
+    line-height: 1.35;
+    margin-bottom: 8px;
+  }
+
+  .client-hero-desc {
+    font-size: 0.85rem;
+    line-height: 1.55;
+  }
+
+  .client-hero-tabs {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .client-hero-tab-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 11px 16px;
+    font-size: 0.92rem;
+  }
+
+  .doctors-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
 

@@ -87,62 +87,31 @@ export default function ClientPortalView({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
       {/* Top Banner & Hero */}
-      <div style={{
-        background: 'linear-gradient(135deg, #075985 0%, #0284c7 50%, #0d9488 100%)',
-        color: '#ffffff',
-        borderRadius: 'var(--radius-xl)',
-        padding: '36px 32px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '16px',
-        boxShadow: 'var(--shadow-xl)',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        <div style={{ maxWidth: '750px' }}>
-          <span style={{
-            background: 'rgba(255, 255, 255, 0.2)',
-            padding: '4px 14px',
-            borderRadius: 'var(--radius-full)',
-            fontSize: '0.85rem',
-            fontWeight: 700,
-            display: 'inline-block',
-            marginBottom: '10px'
-          }}>
+      <div className="client-hero-banner">
+        <div className="client-hero-content">
+          <span className="client-hero-badge">
             🌟 بوابتك الذكية للرعاية الطبية المتكاملة
           </span>
-          <h2 style={{ fontSize: '2rem', fontWeight: 900, lineHeight: 1.3, marginBottom: '10px' }}>
+          <h2 className="client-hero-title">
             احجز موعد كشفك مع نخبة من كبار الاستشاريين والأطباء
           </h2>
-          <p style={{ fontSize: '1.05rem', opacity: 0.92, lineHeight: 1.6 }}>
+          <p className="client-hero-desc">
             اختر التخصص والفرع الأقرب إليك، وتعرف على مواعيد الأطباء المتاحة، وتابع كشوفاتك وروشتاتك الإلكترونية في أي وقت.
           </p>
         </div>
 
         {/* Tabs to switch between Doctors Catalog & Patient Portal */}
-        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+        <div className="client-hero-tabs">
           <button
             id="tab-client-doctors"
-            className="btn"
-            style={{
-              backgroundColor: activeTab === 'doctors' ? '#ffffff' : 'rgba(255, 255, 255, 0.15)',
-              color: activeTab === 'doctors' ? 'var(--primary-700)' : '#ffffff',
-              fontWeight: 700,
-              border: 'none'
-            }}
+            className={`client-hero-tab-btn ${activeTab === 'doctors' ? 'active' : 'inactive'}`}
             onClick={() => setActiveTab('doctors')}
           >
             👨‍⚕️ استعراض الأطباء وحجز موعد
           </button>
           <button
             id="tab-client-records"
-            className="btn"
-            style={{
-              backgroundColor: activeTab === 'my_portal' ? '#ffffff' : 'rgba(255, 255, 255, 0.15)',
-              color: activeTab === 'my_portal' ? 'var(--primary-700)' : '#ffffff',
-              fontWeight: 700,
-              border: 'none'
-            }}
+            className={`client-hero-tab-btn ${activeTab === 'my_portal' ? 'active' : 'inactive'}`}
             onClick={() => setActiveTab('my_portal')}
           >
             📋 متابعة حجوزاتي وروشتاتي الطبية
@@ -218,11 +187,7 @@ export default function ClientPortalView({
           </div>
 
           {/* Doctors Grid */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
-            gap: '20px'
-          }}>
+          <div className="doctors-cards-grid">
             {filteredDoctors.length === 0 ? (
               <div style={{
                 gridColumn: '1 / -1',
@@ -333,7 +298,9 @@ export default function ClientPortalView({
                     paddingTop: '16px',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between'
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '12px'
                   }}>
                     <div>
                       <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'block' }}>قيمة الكشف</span>
@@ -603,7 +570,7 @@ export default function ClientPortalView({
                   </div>
 
                   {/* Date and Time */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
                     <div className="form-group" style={{ margin: 0 }}>
                       <label className="form-label">تاريخ الكشف *</label>
                       <input
@@ -643,7 +610,7 @@ export default function ClientPortalView({
                   </div>
 
                   {/* Patient Info */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
                     <div className="form-group" style={{ margin: 0 }}>
                       <label className="form-label">اسم المريض ثلاثي *</label>
                       <input
